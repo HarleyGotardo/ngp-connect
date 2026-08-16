@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
+import { showSuccess, showError } from '@/lib/swal'
 
 interface Court {
   id: string
@@ -93,17 +94,17 @@ export default function CourtsManager() {
           .update(courtPayload)
           .eq('id', editingCourt.id)
         if (error) throw error
-        alert('Court details updated!')
+        showSuccess('Updated!', 'Court details updated!')
       } else {
         const { error } = await supabase.from('courts').insert(courtPayload)
         if (error) throw error
-        alert('Court venue added successfully!')
+        showSuccess('Added!', 'Court venue added successfully!')
       }
 
       setShowFormModal(false)
       fetchCourts()
     } catch (err: any) {
-      alert(err.message || 'Failed to save court details.')
+      showError('Error', err.message || 'Failed to save court details.')
     }
   }
 
@@ -115,10 +116,10 @@ export default function CourtsManager() {
         .eq('id', court.id)
 
       if (error) throw error
-      alert(`Court marked ${!court.is_active ? 'Active' : 'Inactive'}!`)
+      showSuccess('Updated!', `Court marked ${!court.is_active ? 'Active' : 'Inactive'}!`)
       fetchCourts()
     } catch (err: any) {
-      alert(err.message)
+      showError('Error', err.message)
     }
   }
 

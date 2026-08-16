@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
+import { showSuccess, showError } from '@/lib/swal'
 
 export default function SettingsManager() {
   const supabase = createClient()
@@ -91,15 +92,15 @@ export default function SettingsManager() {
           .update(payload)
           .eq('id', configId)
         if (error) throw error
-        alert('Configuration saved successfully!')
+        showSuccess('Saved!', 'Configuration saved successfully!')
       } else {
         const { error } = await supabase.from('business_config').insert(payload)
         if (error) throw error
-        alert('Configuration initialised successfully!')
+        showSuccess('Initialised!', 'Configuration initialised successfully!')
       }
       fetchSettings()
     } catch (err: any) {
-      alert(err.message || 'Failed to save configuration coordinates.')
+      showError('Error', err.message || 'Failed to save configuration.')
     } finally {
       setSaving(false)
     }

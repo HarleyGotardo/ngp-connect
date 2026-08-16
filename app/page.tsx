@@ -103,16 +103,16 @@ export default async function Home() {
               <span className="flex h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
               The New Generation Basketball Training System
             </div>
-            
+
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-7xl leading-tight">
               STOP WASTING HOURS ON DRILLS THAT{' '}
               <span className="text-orange-500 block sm:inline underline decoration-orange-500/30 underline-offset-8">
                 DON&apos;T TRANSLATE TO GAMES.
               </span>
             </h1>
-            
+
             <p className="mt-6 text-lg sm:text-xl text-zinc-400 max-w-2xl leading-relaxed">
-              Conditioning built into real gameplay scenarios. Acceleration, deceleration, change of direction, and speed studied from elite US coaching clinics. 
+              Conditioning built into real gameplay scenarios. Acceleration, deceleration, change of direction, and speed studied from elite US coaching clinics.
               <span className="text-white font-bold block mt-3">Where learning is fun, engaging, and purposeful — not an old-school coach screaming at you.</span>
             </p>
 
@@ -217,44 +217,26 @@ export default async function Home() {
               const isCamp = service.id === '33333333-3333-3333-3333-333333333333' || service.name.includes('Camp')
 
               return (
-                <div 
-                  key={service.id} 
+                <div
+                  key={service.id}
                   className="flex flex-col rounded-2xl border border-zinc-900 bg-zinc-900/50 overflow-hidden hover:border-orange-500/20 transition duration-200"
                 >
                   {/* Card Header */}
                   <div className="p-8 border-b border-zinc-900 bg-zinc-900/20">
                     <h3 className="text-lg font-bold text-white min-h-[50px]">{service.name}</h3>
                     <div className="mt-4 flex items-baseline">
-                      {is1on1 ? (
-                        <>
-                          <span className="text-3xl font-extrabold text-orange-500">₱5,000</span>
-                          <span className="ml-1.5 text-xs text-zinc-400">/ 5 sessions</span>
-                        </>
-                      ) : (
-                        <span className="text-3xl font-extrabold text-zinc-500">TBD</span>
-                      )}
+                      <span className="text-3xl font-extrabold text-orange-500">
+                        ₱{Number(service.price).toLocaleString()}
+                      </span>
+                      <span className="ml-1.5 text-xs text-zinc-400">
+                        / {service.duration_minutes} mins
+                      </span>
                     </div>
-                    
+
                     <div className="mt-4 flex flex-col gap-1.5">
                       <div className="inline-flex items-center gap-1.5 text-xs text-zinc-400 font-medium">
-                        ⏱️ {is1on1 ? '1 Hour per Session' : isGroup ? '1.5 Hours per Session' : '2 Hours per Session'}
+                        ⏱️ {service.duration_minutes} Minutes Duration
                       </div>
-                      
-                      {is1on1 && (
-                        <div className="text-[10px] text-orange-500 font-bold uppercase tracking-wider">
-                          🔥 ₱1,000 / Hour rate + Court Fee
-                        </div>
-                      )}
-                      {isGroup && (
-                        <div className="text-[10px] text-orange-500 font-bold uppercase tracking-wider">
-                          👥 Exactly 5 Players (Same Positions)
-                        </div>
-                      )}
-                      {isCamp && (
-                        <div className="text-[10px] text-orange-500 font-bold uppercase tracking-wider">
-                          🏕️ Min 20 · Max 40 Players
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -368,10 +350,6 @@ export default async function Home() {
                   </li>
                   <li className="flex gap-3">
                     <span className="text-orange-500">✓</span>
-                    <span>1-on-1 sessions require a minimum commitment of 5 sessions (₱5,000).</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="text-orange-500">✓</span>
                     <span>Please cancel bookings at least {settings.cancellation_hours} hours in advance if schedule conflict occurs.</span>
                   </li>
                 </ul>
@@ -440,8 +418,8 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
             {reviews.map((review, i) => (
-              <div 
-                key={i} 
+              <div
+                key={i}
                 className="flex flex-col justify-between rounded-2xl border border-zinc-900 bg-zinc-900/30 p-8 hover:border-zinc-800 transition"
               >
                 <div>
@@ -501,7 +479,7 @@ export default async function Home() {
                 NEW GEN PERFORMANCE
               </span>
             </div>
-            
+
             {/* Links */}
             <div className="flex flex-wrap justify-center gap-6 text-xs text-zinc-500 font-semibold tracking-wide uppercase">
               <a href="#about" className="hover:text-zinc-300 transition">New Gen Method</a>

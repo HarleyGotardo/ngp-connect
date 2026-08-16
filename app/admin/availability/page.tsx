@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/client'
+import { Plus, X, MapPin, Calendar as CalendarIcon, Clock } from 'lucide-react'
+import { showSuccess, showError, showWarning, confirmDanger } from '@/lib/swal'
 
 interface CoachAvailability {
   id: string
@@ -65,6 +67,9 @@ export default function AvailabilityManager() {
   const [formDate, setFormDate] = useState('')
   const [formStartTime, setFormStartTime] = useState('')
   const [formEndTime, setFormEndTime] = useState('')
+  const [alsoCreateCourtBlocks, setAlsoCreateCourtBlocks] = useState(false)
+  const [selectedFormCourtIds, setSelectedFormCourtIds] = useState<string[]>([])
+  const [alsoCreateCoachBlock, setAlsoCreateCoachBlock] = useState(false)
 
   // SELECTION DRAG HIGHLIGHTER STATES
   const [isSelecting, setIsSelecting] = useState(false)
@@ -234,7 +239,9 @@ export default function AvailabilityManager() {
     setFormDate(formattedDate)
     setFormStartTime(formattedStart)
     setFormEndTime(formattedEnd)
-    
+    setAlsoCreateCourtBlocks(false)
+    setSelectedFormCourtIds([])
+    setAlsoCreateCoachBlock(false)
     setShowAddModal(true)
   }
 
@@ -247,14 +254,14 @@ export default function AvailabilityManager() {
     const endISO = new Date(`${formDate}T${formEndTime}:00`).toISOString()
 
     if (startISO >= endISO) {
-      alert('Start time must be before end time.')
+      showWarning('Invalid Time', 'Start time must be before end time.')
       return
     }
 
     try {
       if (formType === 'coach') {
         if (!coachId) {
-          alert('You must be logged in as coach.')
+          showWarning('Not Logged In', 'You must be logged in as coach.')
           return
         }
         const { error } = await supabase.from('coach_availability').insert({
@@ -264,10 +271,24 @@ export default function AvailabilityManager() {
           status: 'available',
         })
         if (error) throw error
-        alert('Coach availability slot added!')
+
+        if (alsoCreateCourtBlocks && selectedFormCourtIds.length > 0) {
+          const courtInserts = selectedFormCourtIds.map((courtId) => ({
+            court_id: courtId,
+            start_at: startISO,
+            end_at: endISO,
+            status: 'available',
+          }))
+          const { error: courtErr } = await supabase.from('court_availability').insert(courtInserts)
+          if (courtErr) throw courtErr
+        }
+
+        showSuccess('Saved!', alsoCreateCourtBlocks && selectedFormCourtIds.length > 0
+          ? 'Coach slot + court blocks added!'
+          : 'Coach availability slot added!')
       } else {
         if (!formCourtId) {
-          alert('Please select a court.')
+          showWarning('No Court Selected', 'Please select a court.')
           return
         }
         const { error } = await supabase.from('court_availability').insert({
@@ -277,22 +298,44 @@ export default function AvailabilityManager() {
           status: 'available',
         })
         if (error) throw error
-        alert('Court availability block added!')
+
+        if (alsoCreateCoachBlock) {
+          if (!coachId) {
+            showWarning('Missing Coach ID', 'Could not open coach slot automatically.')
+          } else {
+            const { error: coachErr } = await supabase.from('coach_availability').insert({
+              coach_id: coachId,
+              start_at: startISO,
+              end_at: endISO,
+              status: 'available',
+            })
+            if (coachErr) throw coachErr
+          }
+        }
+
+        showSuccess('Saved!', alsoCreateCoachBlock
+          ? 'Court block + coach slot added!'
+          : 'Court availability block added!')
       }
 
       setShowAddModal(false)
       setSelectionDay(null)
       fetchData()
     } catch (err: any) {
-      alert(err?.message || 'Failed to save block.')
+      showError('Error', err?.message || 'Failed to save block.')
     }
   }
 
   // DELETE SUBMISSIONS
   const handleDeleteEvent = async () => {
     if (!selectedEvent) return
-    const conf = confirm(`Delete this ${selectedEvent.type === 'coach' ? 'Coach' : 'Court'} slot?`)
-    if (!conf) return
+    const slotLabel = selectedEvent.type === 'coach' ? 'Coach' : 'Court'
+    const confirmed = await confirmDanger(
+      `Delete ${slotLabel} Slot`,
+      `This will permanently release this availability block. If a session was booked on it, the booking will lose its slot reference.`,
+      'Yes, delete'
+    )
+    if (!confirmed) return
 
     try {
       if (selectedEvent.type === 'coach') {
@@ -303,12 +346,12 @@ export default function AvailabilityManager() {
         if (error) throw error
       }
 
-      alert('Availability released!')
+      showSuccess('Deleted', 'Availability block released successfully.')
       setShowDetailModal(false)
       setSelectedEvent(null)
       fetchData()
     } catch (err: any) {
-      alert(err?.message || 'Delete failed. Slot may be booked by client.')
+      showError('Error', err?.message || 'Delete failed. Slot may be booked by a client.')
     }
   }
 
@@ -343,6 +386,9 @@ export default function AvailabilityManager() {
             setFormStartTime('09:00')
             setFormEndTime('10:00')
             setFormType('coach')
+            setAlsoCreateCourtBlocks(false)
+            setSelectedFormCourtIds([])
+            setAlsoCreateCoachBlock(false)
             setShowAddModal(true)
           }}
           className="rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400 shadow-lg shadow-orange-500/10 transition"
@@ -428,12 +474,15 @@ export default function AvailabilityManager() {
                     setFormEndTime('10:00')
                     setFormType('coach')
                     setSelectionDay(day)
+                    setAlsoCreateCourtBlocks(false)
+                    setSelectedFormCourtIds([])
+                    setAlsoCreateCoachBlock(false)
                     setShowAddModal(true)
                   }}
-                  className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-extrabold hover:bg-orange-500 hover:text-black transition"
+                  className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center hover:bg-orange-500 hover:text-black transition"
                   title="Add block for this day"
                 >
-                  ＋
+                  <Plus className="h-4 w-4" />
                 </button>
               </div>
 
@@ -591,75 +640,139 @@ export default function AvailabilityManager() {
                     />
                   )}
 
-                  {/* Render Coach blocks */}
-                  {coachEventsThisDay.map((s) => {
-                    const pos = getEventPosition(s.start_at, s.end_at)
-                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                  {/* ---- Overlap-aware event rendering ---- */}
+                  {(() => {
+                    // Build a list of "merged" slots for this day
+                    const rendered: React.ReactNode[] = []
 
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenDetail({
-                            id: s.id,
-                            type: 'coach',
-                            title: 'Coach JP Block',
-                            start: s.start_at,
-                            end: s.end_at,
-                            status: s.status,
-                          })
-                        }}
-                        style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                        className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-orange-500/5 hover:-translate-y-[1px]"
-                      >
-                        <div>
-                          <div className="font-extrabold tracking-wide uppercase text-[8px] text-orange-500">Coach Block</div>
-                          <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-none">JP Availability</div>
-                        </div>
-                        <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">
-                          {displayStart} - {displayEnd}
-                        </div>
-                      </div>
-                    )
-                  })}
+                    // Track which court events were paired with a coach event
+                    const pairedCourtIds = new Set<string>()
 
-                  {/* Render Court blocks */}
-                  {courtEventsThisDay.map((s) => {
-                    const pos = getEventPosition(s.start_at, s.end_at)
-                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                    // 1. Iterate coach events; find overlapping court events
+                    coachEventsThisDay.forEach((coach) => {
+                      const coachStart = new Date(coach.start_at).getTime()
+                      const coachEnd   = new Date(coach.end_at).getTime()
 
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleOpenDetail({
-                            id: s.id,
-                            type: 'court',
-                            title: s.courts?.name || 'Court Block',
-                            start: s.start_at,
-                            end: s.end_at,
-                            courtName: s.courts?.name,
-                            location: s.courts?.location,
-                            status: s.status,
-                          })
-                        }}
-                        style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                        className="event-card absolute w-[90%] left-[10%] z-10 rounded-lg border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-blue-500/5 hover:-translate-y-[1px]"
-                      >
-                        <div>
-                          <div className="font-extrabold tracking-wide uppercase text-[8px] text-blue-500">Court Reserved</div>
-                          <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-tight truncate">{s.courts?.name}</div>
-                        </div>
-                        <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">
-                          {displayStart} - {displayEnd}
-                        </div>
-                      </div>
-                    )
-                  })}
+                      // Find all court events that overlap this coach block
+                      const overlappingCourts = courtEventsThisDay.filter((court) => {
+                        const cs = new Date(court.start_at).getTime()
+                        const ce = new Date(court.end_at).getTime()
+                        return cs < coachEnd && ce > coachStart
+                      })
+
+                      if (overlappingCourts.length > 0) {
+                        // Paired — render ONE combined card spanning the full coach time
+                        overlappingCourts.forEach((court) => pairedCourtIds.add(court.id))
+
+                        const pos = getEventPosition(coach.start_at, coach.end_at)
+                        const dStart = new Date(coach.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd   = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const courtNames = overlappingCourts.map(c => c.courts?.name).filter(Boolean).join(', ')
+
+                        rendered.push(
+                          <div
+                            key={`combined-${coach.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // Open coach detail on click (representative)
+                              handleOpenDetail({
+                                id: coach.id,
+                                type: 'coach',
+                                title: 'Coach JP + Court Open',
+                                start: coach.start_at,
+                                end: coach.end_at,
+                                status: coach.status,
+                              })
+                            }}
+                            style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
+                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-md shadow-emerald-500/5 hover:-translate-y-[1px]"
+                          >
+                            <div>
+                              <div className="font-extrabold tracking-wide uppercase text-[8px] text-emerald-400 flex items-center gap-1">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 -ml-0.5" />
+                                Coach + Court
+                              </div>
+                              <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-tight truncate">
+                                JP + {courtNames || 'Court'}
+                              </div>
+                            </div>
+                            <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">
+                              {dStart} – {dEnd}
+                            </div>
+                          </div>
+                        )
+                      } else {
+                        // Standalone coach block — orange
+                        const pos = getEventPosition(coach.start_at, coach.end_at)
+                        const dStart = new Date(coach.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd   = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+
+                        rendered.push(
+                          <div
+                            key={coach.id}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenDetail({
+                                id: coach.id,
+                                type: 'coach',
+                                title: 'Coach JP Block',
+                                start: coach.start_at,
+                                end: coach.end_at,
+                                status: coach.status,
+                              })
+                            }}
+                            style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
+                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-orange-500/5 hover:-translate-y-[1px]"
+                          >
+                            <div>
+                              <div className="font-extrabold tracking-wide uppercase text-[8px] text-orange-500">Coach Block</div>
+                              <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-none">JP Availability</div>
+                            </div>
+                            <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">{dStart} - {dEnd}</div>
+                          </div>
+                        )
+                      }
+                    })
+
+                    // 2. Render unpaired court events — blue
+                    courtEventsThisDay
+                      .filter(s => !pairedCourtIds.has(s.id))
+                      .forEach((s) => {
+                        const pos = getEventPosition(s.start_at, s.end_at)
+                        const dStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd   = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+
+                        rendered.push(
+                          <div
+                            key={s.id}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleOpenDetail({
+                                id: s.id,
+                                type: 'court',
+                                title: s.courts?.name || 'Court Block',
+                                start: s.start_at,
+                                end: s.end_at,
+                                courtName: s.courts?.name,
+                                location: s.courts?.location,
+                                status: s.status,
+                              })
+                            }}
+                            style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
+                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-blue-500/5 hover:-translate-y-[1px]"
+                          >
+                            <div>
+                              <div className="font-extrabold tracking-wide uppercase text-[8px] text-blue-500">Court Reserved</div>
+                              <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-tight truncate">{s.courts?.name}</div>
+                            </div>
+                            <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">{dStart} - {dEnd}</div>
+                          </div>
+                        )
+                      })
+
+                    return rendered
+                  })()}
                 </div>
               )
             })}
@@ -705,20 +818,90 @@ export default function AvailabilityManager() {
                 </div>
               </div>
 
+              {/* Also open availability for courts (conditional) */}
+              {formType === 'coach' && (
+                <div className="space-y-3 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={alsoCreateCourtBlocks}
+                      onChange={(e) => {
+                        setAlsoCreateCourtBlocks(e.target.checked)
+                        if (e.target.checked && courts.length > 0 && selectedFormCourtIds.length === 0) {
+                          setSelectedFormCourtIds([courts[0].id])
+                        }
+                      }}
+                      className="rounded border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 focus:ring-orange-500 h-4 w-4"
+                    />
+                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                      Also open availability for rented courts
+                    </span>
+                  </label>
+
+                  {alsoCreateCourtBlocks && (
+                    <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 p-4 space-y-2.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <span className="block text-[10px] uppercase font-bold text-zinc-450 tracking-wider">
+                        Select courts to open:
+                      </span>
+                      <div className="space-y-2">
+                        {courts.map((court) => {
+                          const isChecked = selectedFormCourtIds.includes(court.id)
+                          return (
+                            <label key={court.id} className="flex items-center gap-2 cursor-pointer select-none text-xs text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white transition">
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedFormCourtIds((prev) => [...prev, court.id])
+                                  } else {
+                                    setSelectedFormCourtIds((prev) => prev.filter((id) => id !== court.id))
+                                  }
+                                }}
+                                className="rounded border-zinc-200 bg-zinc-100 dark:border-zinc-805 dark:bg-zinc-900 text-orange-500 focus:ring-orange-500 h-3.5 w-3.5"
+                              />
+                              <span>
+                                {court.name} <span className="text-[10px] text-zinc-450">({court.location})</span>
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Court Dropdown (conditional) */}
               {formType === 'court' && (
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Select Basket Court</label>
-                  <select
-                    required
-                    value={formCourtId}
-                    onChange={(e) => setFormCourtId(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
-                  >
-                    {courts.map(c => (
-                      <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
-                    ))}
-                  </select>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Select Basket Court</label>
+                    <select
+                      required
+                      value={formCourtId}
+                      onChange={(e) => setFormCourtId(e.target.value)}
+                      className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    >
+                      {courts.map(c => (
+                        <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={alsoCreateCoachBlock}
+                        onChange={(e) => setAlsoCreateCoachBlock(e.target.checked)}
+                        className="rounded border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 focus:ring-orange-500 h-4 w-4"
+                      />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                        Also open Coach JP availability for this period
+                      </span>
+                    </label>
+                  </div>
                 </div>
               )}
 
@@ -801,7 +984,7 @@ export default function AvailabilityManager() {
                 onClick={() => setShowDetailModal(false)}
                 className="h-7 w-7 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 text-xs flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white"
               >
-                ✕
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -809,17 +992,21 @@ export default function AvailabilityManager() {
               {selectedEvent.location && (
                 <div>
                   <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Location</span>
-                  <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 block">📍 {selectedEvent.location}</span>
+                  <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 flex items-center gap-1">
+                    <MapPin className="h-3.5 w-3.5 text-blue-500" /> {selectedEvent.location}
+                  </span>
                 </div>
               )}
 
               <div>
                 <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Time Interval</span>
-                <span className="font-semibold text-orange-500 mt-0.5 block">
-                  📅 {new Date(selectedEvent.start).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })}
+                <span className="font-semibold text-orange-500 mt-0.5 flex items-center gap-1">
+                  <CalendarIcon className="h-3.5 w-3.5 text-orange-500" />
+                  {new Date(selectedEvent.start).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'Asia/Manila' })}
                 </span>
-                <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 block">
-                  🕒 {new Date(selectedEvent.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })} - {new Date(selectedEvent.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })}
+                <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5 text-zinc-400" />
+                  {new Date(selectedEvent.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })} - {new Date(selectedEvent.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })}
                 </span>
               </div>
 

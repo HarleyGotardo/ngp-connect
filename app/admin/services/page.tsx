@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
+import { showSuccess, showError } from '@/lib/swal'
 
 interface Service {
   id: string
@@ -88,17 +89,17 @@ export default function ServicesManager() {
           .update(servicePayload)
           .eq('id', editingService.id)
         if (error) throw error
-        alert('Training program details updated!')
+        showSuccess('Updated!', 'Training program details updated!')
       } else {
         const { error } = await supabase.from('services').insert(servicePayload)
         if (error) throw error
-        alert('Training program added successfully!')
+        showSuccess('Added!', 'Training program added successfully!')
       }
 
       setShowFormModal(false)
       fetchServices()
     } catch (err: any) {
-      alert(err.message || 'Failed to save training program.')
+      showError('Error', err.message || 'Failed to save training program.')
     }
   }
 
@@ -110,10 +111,10 @@ export default function ServicesManager() {
         .eq('id', service.id)
 
       if (error) throw error
-      alert(`Program marked ${!service.is_active ? 'Active' : 'Inactive'}!`)
+      showSuccess('Updated!', `Program marked ${!service.is_active ? 'Active' : 'Inactive'}!`)
       fetchServices()
     } catch (err: any) {
-      alert(err.message)
+      showError('Error', err.message)
     }
   }
 

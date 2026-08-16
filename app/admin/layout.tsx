@@ -4,6 +4,21 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/client'
+import {
+  LayoutDashboard,
+  Ticket,
+  Calendar,
+  Zap,
+  MapPin,
+  Users,
+  Star,
+  Settings as SettingsIcon,
+  Sun,
+  Moon,
+  LogOut,
+  Menu,
+  X
+} from 'lucide-react'
 
 interface Profile {
   full_name: string
@@ -23,14 +38,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Side Navigation Items
   const navItems = [
-    { name: 'Dashboard', href: '/admin', icon: '📊' },
-    { name: 'Bookings', href: '/admin/bookings', icon: '🎟️' },
-    { name: 'Availability', href: '/admin/availability', icon: '📅' },
-    { name: 'Services', href: '/admin/services', icon: '⚡' },
-    { name: 'Courts', href: '/admin/courts', icon: '🏀' },
-    { name: 'Clients', href: '/admin/clients', icon: '👥' },
-    { name: 'Testimonials', href: '/admin/reviews', icon: '⭐' },
-    { name: 'Settings', href: '/admin/settings', icon: '⚙️' },
+    { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Bookings', href: '/admin/bookings', icon: Ticket },
+    { name: 'Availability', href: '/admin/availability', icon: Calendar },
+    { name: 'Services', href: '/admin/services', icon: Zap },
+    { name: 'Courts', href: '/admin/courts', icon: MapPin },
+    { name: 'Clients', href: '/admin/clients', icon: Users },
+    { name: 'Testimonials', href: '/admin/reviews', icon: Star },
+    { name: 'Settings', href: '/admin/settings', icon: SettingsIcon },
   ]
 
   const isLoginPage = pathname === '/admin/login'
@@ -127,10 +142,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {profile?.full_name?.charAt(0) || 'C'}
           </div>
           <div>
-            <div className="text-sm font-bold text-zinc-950 dark:text-white leading-none truncate max-w-[130px]">
+            <div className="text-sm font-bold text-zinc-955 dark:text-white leading-none truncate max-w-[130px]">
               {profile?.full_name || 'Coach JP'}
             </div>
-            <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider mt-1 inline-block">
+            <span className="text-[10px] uppercase font-bold text-zinc-550 dark:text-zinc-500 tracking-wider mt-1 inline-block">
               {profile?.role || 'Coach'}
             </span>
           </div>
@@ -140,6 +155,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="flex-1 space-y-1 px-4 text-sm font-semibold tracking-wide">
           {navItems.map((item) => {
             const isActive = pathname === item.href
+            const Icon = item.icon
             return (
               <Link
                 key={item.name}
@@ -150,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : 'text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
                 }`}
               >
-                <span>{item.icon}</span>
+                <Icon className="h-4 w-4" />
                 {item.name}
               </Link>
             )
@@ -161,16 +177,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 space-y-1">
           <button
             onClick={toggleTheme}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-455 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
           >
-            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
           >
-            <span>🚪</span>
+            <LogOut className="h-4 w-4" />
             Sign Out
           </button>
         </div>
@@ -185,7 +201,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
               aria-label="Open sidebar menu"
             >
-              ☰
+              <Menu className="h-5 w-5" />
             </button>
             <div className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
@@ -201,7 +217,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
               title="Toggle Theme"
             >
-              {theme === 'dark' ? '☀️' : '🌙'}
+              {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
           </div>
         </header>
@@ -216,7 +232,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* MOBILE NAVIGATION DRAWER SIDEBAR */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-950 p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out md:hidden ${
+          className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-955 p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out md:hidden ${
             mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
         >
@@ -232,7 +248,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               onClick={() => setMobileMenuOpen(false)}
               className="h-8 w-8 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 text-xs flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white"
             >
-              ✕
+              <X className="h-4 w-4" />
             </button>
           </div>
 
@@ -240,6 +256,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <nav className="flex-1 space-y-1 mt-6 text-sm font-semibold tracking-wide">
             {navItems.map((item) => {
               const isActive = pathname === item.href
+              const Icon = item.icon
               return (
                 <Link
                   key={item.name}
@@ -248,10 +265,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                     isActive
                       ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/10'
-                      : 'text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
+                      : 'text-zinc-650 hover:bg-zinc-100 hover:text-zinc-955 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
                   }`}
                 >
-                  <span>{item.icon}</span>
+                  <Icon className="h-4 w-4" />
                   {item.name}
                 </Link>
               )
@@ -267,7 +284,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               }}
               className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
             >
-              <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+              {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
             </button>
 
@@ -276,9 +293,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 setMobileMenuOpen(false)
                 handleLogout()
               }}
-              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-655 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
             >
-              <span>🚪</span>
+              <LogOut className="h-4 w-4" />
               Sign Out
             </button>
           </div>

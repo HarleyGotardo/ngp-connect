@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
+import { showSuccess, showError } from '@/lib/swal'
 
 interface Review {
   id: string
@@ -88,17 +89,17 @@ export default function ReviewsManager() {
           .update(reviewPayload)
           .eq('id', editingReview.id)
         if (error) throw error
-        alert('Testimonial details updated!')
+        showSuccess('Updated!', 'Testimonial details updated!')
       } else {
         const { error } = await supabase.from('reviews').insert(reviewPayload)
         if (error) throw error
-        alert('Testimonial added successfully!')
+        showSuccess('Added!', 'Testimonial added successfully!')
       }
 
       setShowFormModal(false)
       fetchReviews()
     } catch (err: any) {
-      alert(err.message || 'Failed to save testimonial details.')
+      showError('Error', err.message || 'Failed to save testimonial details.')
     }
   }
 
@@ -110,10 +111,10 @@ export default function ReviewsManager() {
         .eq('id', review.id)
 
       if (error) throw error
-      alert(`Testimonial marked ${!review.is_active ? 'Active' : 'Inactive'}!`)
+      showSuccess('Updated!', `Testimonial marked ${!review.is_active ? 'Active' : 'Inactive'}!`)
       fetchReviews()
     } catch (err: any) {
-      alert(err.message)
+      showError('Error', err.message)
     }
   }
 
@@ -125,10 +126,10 @@ export default function ReviewsManager() {
         .eq('id', review.id)
 
       if (error) throw error
-      alert(`Testimonial marked ${!review.is_featured ? 'Featured' : 'Standard'}!`)
+      showSuccess('Updated!', `Testimonial marked ${!review.is_featured ? 'Featured' : 'Standard'}!`)
       fetchReviews()
     } catch (err: any) {
-      alert(err.message)
+      showError('Error', err.message)
     }
   }
 

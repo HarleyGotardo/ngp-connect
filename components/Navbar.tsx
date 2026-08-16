@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { Menu, X } from 'lucide-react'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -18,9 +19,9 @@ export default function Navbar() {
             aria-label="Toggle navigation menu"
           >
             {isOpen ? (
-              <span className="text-xl">✕</span>
+              <X className="h-5 w-5" />
             ) : (
-              <span className="text-xl">☰</span>
+              <Menu className="h-5 w-5" />
             )}
           </button>
 

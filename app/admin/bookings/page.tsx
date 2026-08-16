@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/client'
+import { showSuccess, showError, confirmDanger } from '@/lib/swal'
 
 interface ClientInfo {
   full_name: string
@@ -177,7 +178,7 @@ export default function BookingsManager() {
       setBookings(prev => prev.map(b => b.id === selectedBooking.id ? { ...b, admin_notes: adminNoteInput } : b))
       setSelectedBooking(prev => prev ? { ...prev, admin_notes: adminNoteInput } : null)
     } catch (err) {
-      alert('Failed to update notes.')
+      showError('Error', 'Failed to update notes.')
     }
   }
 
@@ -209,13 +210,13 @@ export default function BookingsManager() {
         .eq('id', selectedBooking.id)
       if (bookErr) throw bookErr
 
-      alert('Payment confirmed and booking verified!')
-      
+      showSuccess('Confirmed!', 'Payment confirmed and booking verified!')
+
       // Refresh views
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      alert('Failed to confirm payment.')
+      showError('Error', 'Failed to confirm payment.')
     }
   }
 
@@ -263,13 +264,13 @@ export default function BookingsManager() {
           .eq('id', selectedBooking.court_availability_id)
       }
 
-      alert('Payment rejected and slot released.')
+      showSuccess('Rejected', 'Payment rejected and slot released.')
       setShowRejectModal(false)
       setRejectReason('')
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      alert('Failed to reject payment.')
+      showError('Error', 'Failed to reject payment.')
     }
   }
 
@@ -283,19 +284,23 @@ export default function BookingsManager() {
         .eq('id', selectedBooking.id)
       if (error) throw error
 
-      alert('Session marked as completed!')
+      showSuccess('Completed!', 'Session marked as completed!')
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      alert('Failed to update status.')
+      showError('Error', 'Failed to update status.')
     }
   }
 
   // ADMIN ACTION: CANCEL BOOKING (BY ADMIN)
   const handleAdminCancelBooking = async () => {
     if (!selectedBooking) return
-    const confirmCancel = confirm('Are you sure you want to cancel this booking? This will create a pending refund if payment was verified.')
-    if (!confirmCancel) return
+    const confirmed = await confirmDanger(
+      'Cancel Booking',
+      'Are you sure you want to cancel this booking? This will create a pending refund if payment was verified.',
+      'Yes, cancel booking'
+    )
+    if (!confirmed) return
 
     try {
       // 1. Update Booking status
@@ -333,11 +338,11 @@ export default function BookingsManager() {
           .eq('id', selectedBooking.court_availability_id)
       }
 
-      alert('Booking cancelled successfully.')
+      showSuccess('Cancelled', 'Booking cancelled successfully.')
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      alert('Failed to cancel booking.')
+      showError('Error', 'Failed to cancel booking.')
     }
   }
 
@@ -359,11 +364,11 @@ export default function BookingsManager() {
         .eq('id', refund.id)
       if (error) throw error
 
-      alert('Refund marked as completed!')
+      showSuccess('Refunded!', 'Refund marked as completed!')
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      alert('Failed to process refund.')
+      showError('Error', 'Failed to process refund.')
     }
   }
 
