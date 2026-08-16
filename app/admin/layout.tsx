@@ -15,9 +15,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname()
   const supabase = createClient()
 
+  // STATE
   const [loading, setLoading] = useState(true)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
 
   // Side Navigation Items
   const navItems = [
@@ -33,7 +35,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const isLoginPage = pathname === '/admin/login'
 
+  // INITIALIZE USER & THEME
   useEffect(() => {
+    // Read theme preference from localStorage
+    const activeTheme = localStorage.getItem('theme') as 'light' | 'dark' || 'dark'
+    setTheme(activeTheme)
+    if (activeTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+
     if (isLoginPage) {
       setLoading(false)
       return
@@ -63,6 +75,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkUser()
   }, [router, supabase, isLoginPage])
 
+  // THEME TOGGLE HANDLER
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('theme', nextTheme)
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.refresh()
@@ -75,34 +99,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-zinc-800 dark:bg-zinc-950 dark:text-white transition-colors duration-200">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
-          <span className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">Loading Session...</span>
+          <span className="text-sm font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">Loading Session...</span>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-950 text-white font-sans">
+    <div className="flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white font-sans transition-colors duration-200">
+      
       {/* SIDEBAR (DESKTOP) */}
-      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-zinc-900 bg-zinc-900/40 backdrop-blur-xl">
+      <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/40 backdrop-blur-xl">
         {/* Brand */}
-        <div className="flex h-16 items-center gap-2 px-6 border-b border-zinc-900">
+        <div className="flex h-16 items-center gap-2 px-6 border-b border-zinc-200 dark:border-zinc-900">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
             NGP
           </span>
-          <span className="font-extrabold text-sm tracking-tight text-white uppercase">Coach Portal</span>
+          <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white uppercase">Coach Portal</span>
         </div>
 
         {/* User Card */}
-        <div className="p-4 mx-4 my-6 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center gap-3">
+        <div className="p-4 mx-4 my-6 rounded-xl bg-zinc-100 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-500/10 text-orange-500 text-sm font-bold border border-orange-500/20">
             {profile?.full_name?.charAt(0) || 'C'}
           </div>
           <div>
-            <div className="text-sm font-bold text-white leading-none">{profile?.full_name || 'Coach JP'}</div>
+            <div className="text-sm font-bold text-zinc-950 dark:text-white leading-none truncate max-w-[130px]">
+              {profile?.full_name || 'Coach JP'}
+            </div>
             <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider mt-1 inline-block">
               {profile?.role || 'Coach'}
             </span>
@@ -120,7 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                   isActive
                     ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/10'
-                    : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                    : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <span>{item.icon}</span>
@@ -130,11 +157,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-zinc-900">
+        {/* Footer Area (Theme Toggle + Logout) */}
+        <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 space-y-1">
+          {/* Theme Switcher */}
+          <button
+            onClick={toggleTheme}
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+          >
+            <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+            {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+          </button>
+
+          {/* Logout */}
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
           >
             <span>🚪</span>
             Sign Out
@@ -144,25 +181,35 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* MOBILE HEADER */}
       <div className="flex flex-1 flex-col md:pl-64">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md px-4 md:hidden">
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 dark:border-zinc-900 dark:bg-zinc-950/80 backdrop-blur-md px-4 md:hidden">
           <div className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
               NGP
             </span>
-            <span className="font-extrabold text-sm tracking-tight">COACH PORTAL</span>
+            <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">COACH PORTAL</span>
           </div>
 
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900"
-          >
-            {mobileMenuOpen ? '✕' : '☰'}
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Quick theme toggle on mobile */}
+            <button
+              onClick={toggleTheme}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
+              title="Toggle Theme"
+            >
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
+            >
+              {mobileMenuOpen ? '✕' : '☰'}
+            </button>
+          </div>
         </header>
 
         {/* MOBILE NAVIGATION OVERLAY */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-30 bg-zinc-950 pt-20 px-4 space-y-2 md:hidden animate-in slide-in-from-top duration-200">
+          <div className="fixed inset-0 z-30 bg-white dark:bg-zinc-950 pt-20 px-4 space-y-2 md:hidden animate-in slide-in-from-top duration-200">
             <nav className="space-y-1 text-sm font-semibold tracking-wide">
               {navItems.map((item) => {
                 const isActive = pathname === item.href
@@ -174,7 +221,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                       isActive
                         ? 'bg-orange-500 text-black'
-                        : 'text-zinc-400 hover:bg-zinc-900 hover:text-white'
+                        : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
                     }`}
                   >
                     <span>{item.icon}</span>
@@ -182,12 +229,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </Link>
                 )
               })}
+              
+              {/* Mobile overlay theme option */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false)
+                  toggleTheme()
+                }}
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+              >
+                <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+                {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+              </button>
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false)
                   handleLogout()
                 }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
               >
                 <span>🚪</span>
                 Sign Out

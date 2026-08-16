@@ -131,48 +131,48 @@ export default function AdminDashboard() {
       {/* Welcome Heading */}
       <div>
         <h1 className="text-3xl font-extrabold tracking-tight">Good morning, Coach JP 👋</h1>
-        <p className="mt-1 text-sm text-zinc-400">Here&apos;s what is happening with NGP today.</p>
+        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Here&apos;s what is happening with NGP today.</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {/* Metric 1 */}
-        <div className="rounded-xl border border-zinc-900 bg-zinc-900/30 p-6">
+        <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/30 p-6 shadow-sm dark:shadow-none transition-colors duration-200">
           <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Today&apos;s Sessions</div>
-          <div className="mt-2 text-3xl font-black text-white">{stats.todaySessionsCount}</div>
+          <div className="mt-2 text-3xl font-black text-zinc-900 dark:text-white">{stats.todaySessionsCount}</div>
         </div>
 
         {/* Metric 2 */}
-        <Link href="/admin/bookings?filter=payment" className="rounded-xl border border-zinc-900 bg-zinc-900/30 p-6 hover:border-orange-500/20 transition group">
-          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-400 transition">Pending Payments</div>
+        <Link href="/admin/bookings?filter=payment" className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/30 p-6 shadow-sm dark:shadow-none hover:border-orange-500/30 dark:hover:border-orange-500/20 transition group duration-200">
+          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-600 dark:group-hover:text-zinc-400 transition">Pending Payments</div>
           <div className="mt-2 text-3xl font-black text-yellow-500">{stats.pendingPaymentsCount}</div>
         </Link>
 
         {/* Metric 3 */}
-        <Link href="/admin/bookings?filter=confirmed" className="rounded-xl border border-zinc-900 bg-zinc-900/30 p-6 hover:border-orange-500/20 transition group">
-          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-400 transition">Upcoming Confirmed</div>
+        <Link href="/admin/bookings?filter=confirmed" className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/30 p-6 shadow-sm dark:shadow-none hover:border-orange-500/30 dark:hover:border-orange-500/20 transition group duration-200">
+          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-600 dark:group-hover:text-zinc-400 transition">Upcoming Confirmed</div>
           <div className="mt-2 text-3xl font-black text-green-500">{stats.upcomingConfirmedCount}</div>
         </Link>
 
         {/* Metric 4 */}
-        <Link href="/admin/bookings?filter=refund" className="rounded-xl border border-zinc-900 bg-zinc-900/30 p-6 hover:border-orange-500/20 transition group">
-          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-400 transition">Refunds Pending</div>
+        <Link href="/admin/bookings?filter=refund" className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/30 p-6 shadow-sm dark:shadow-none hover:border-orange-500/30 dark:hover:border-orange-500/20 transition group duration-200">
+          <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider group-hover:text-zinc-600 dark:group-hover:text-zinc-400 transition">Refunds Pending</div>
           <div className="mt-2 text-3xl font-black text-red-500">{stats.pendingRefundsCount}</div>
         </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
         {/* Today's Schedule Table */}
-        <div className="lg:col-span-8 rounded-xl border border-zinc-900 bg-zinc-900/20 p-6">
-          <h2 className="text-lg font-bold mb-4">Today&apos;s Schedule</h2>
+        <div className="lg:col-span-8 rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/20 p-6 shadow-sm dark:shadow-none transition-colors duration-200">
+          <h2 className="text-lg font-bold mb-4 text-zinc-900 dark:text-white">Today&apos;s Schedule</h2>
           {todaySchedule.length === 0 ? (
             <div className="text-center py-10 text-xs text-zinc-500">
               No sessions scheduled for today.
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-zinc-400">
-                <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-900">
+              <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+                <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900">
                   <tr>
                     <th className="pb-3">Time</th>
                     <th className="pb-3">Athlete</th>
@@ -181,13 +181,13 @@ export default function AdminDashboard() {
                     <th className="pb-3">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-900/40">
+                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
                   {todaySchedule.map((b) => (
-                    <tr key={b.id} className="hover:bg-zinc-900/10">
+                    <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/10 transition-colors">
                       <td className="py-3 font-semibold text-orange-500">
                         {formatTime(b.start_at)}
                       </td>
-                      <td className="py-3 text-white font-semibold">{b.clients?.full_name}</td>
+                      <td className="py-3 text-zinc-900 dark:text-white font-semibold">{b.clients?.full_name}</td>
                       <td className="py-3">{b.services?.name}</td>
                       <td className="py-3 text-xs">{b.courts?.name}</td>
                       <td className="py-3">
@@ -204,23 +204,23 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Action Pending Verification */}
-        <div className="lg:col-span-4 rounded-xl border border-zinc-900 bg-zinc-900/20 p-6 space-y-4">
-          <h2 className="text-lg font-bold">Needs Review</h2>
+        <div className="lg:col-span-4 rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/20 p-6 space-y-4 shadow-sm dark:shadow-none transition-colors duration-200">
+          <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Needs Review</h2>
           <p className="text-xs text-zinc-500 leading-relaxed">
             Verify screenshot receipts submitted by athletes for validation.
           </p>
 
           {pendingReviews.length === 0 ? (
-            <div className="text-center py-8 text-xs text-zinc-500 border border-dashed border-zinc-800 rounded-lg bg-zinc-950/20">
+            <div className="text-center py-8 text-xs text-zinc-500 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg bg-zinc-50 dark:bg-zinc-950/20">
               No payments waiting review.
             </div>
           ) : (
             <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
               {pendingReviews.slice(0, 5).map((b) => (
-                <div key={b.id} className="rounded-lg border border-zinc-800 bg-zinc-950 p-3 flex justify-between items-center text-xs">
+                <div key={b.id} className="rounded-lg border border-zinc-250 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 p-3 flex justify-between items-center text-xs">
                   <div>
-                    <div className="font-bold text-white">{b.clients?.full_name}</div>
-                    <div className="text-zinc-500 mt-0.5">{b.services?.name}</div>
+                    <div className="font-bold text-zinc-900 dark:text-white">{b.clients?.full_name}</div>
+                    <div className="text-zinc-600 dark:text-zinc-500 mt-0.5">{b.services?.name}</div>
                     <div className="text-[10px] text-orange-500 font-semibold tracking-wider mt-1">{b.booking_reference}</div>
                   </div>
                   <Link
