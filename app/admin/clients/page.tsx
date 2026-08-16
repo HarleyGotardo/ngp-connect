@@ -123,60 +123,98 @@ export default function ClientsManager() {
         />
       </div>
 
-      {/* DATA TABLE */}
+      {/* DATA VIEWS */}
       {filteredClients.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-zinc-200 dark:border-zinc-900 rounded-xl text-zinc-500 text-sm bg-white dark:bg-zinc-900/10">
           No clients found matching query.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 shadow-sm dark:shadow-none transition-colors duration-200">
-          <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
-            <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
-              <tr>
-                <th className="p-4">Client Name</th>
-                <th className="p-4">Contact Details</th>
-                <th className="p-4">Age</th>
-                <th className="p-4 text-center">Sessions Booked</th>
-                <th className="p-4">Total Spending</th>
-                <th className="p-4">Last Session</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
-              {filteredClients.map((c) => (
-                <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/25 transition-colors">
-                  <td className="p-4 font-bold text-zinc-900 dark:text-white">
-                    {c.full_name}
-                  </td>
-                  <td className="p-4 text-xs space-y-0.5">
-                    <span className="text-zinc-750 dark:text-zinc-300 block">{c.email}</span>
-                    <span className="text-zinc-450 dark:text-zinc-500 block">{c.phone}</span>
-                  </td>
-                  <td className="p-4 text-xs text-zinc-700 dark:text-zinc-300">
-                    {c.age} years old
-                  </td>
-                  <td className="p-4 text-center font-bold text-zinc-900 dark:text-white">
-                    {getBookingCount(c)}
-                  </td>
-                  <td className="p-4 font-bold text-orange-500">
+        <>
+          {/* Mobile Card List (hidden on desktop) */}
+          <div className="md:hidden space-y-4">
+            {filteredClients.map((c) => (
+              <div key={c.id} className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 p-4 space-y-3 shadow-sm dark:shadow-none">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-zinc-900 dark:text-white text-base">{c.full_name}</h3>
+                    <p className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5">{c.email}</p>
+                  </div>
+                  <span className="font-bold text-orange-500 text-sm">
                     ₱{getTotalSpending(c).toLocaleString()}
-                  </td>
-                  <td className="p-4 text-xs text-zinc-500 dark:text-zinc-400">
-                    {getLastBooking(c)}
-                  </td>
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={() => setSelectedClient(c)}
-                      className="rounded border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
-                    >
-                      View Profile
-                    </button>
-                  </td>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs border-t border-zinc-100 dark:border-zinc-900/40 pt-2 text-zinc-650 dark:text-zinc-400">
+                  <div>
+                    <span className="text-zinc-400 dark:text-zinc-550 block text-[10px] uppercase font-semibold">Phone</span>
+                    <span>{c.phone}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-400 dark:text-zinc-550 block text-[10px] uppercase font-semibold">Sessions</span>
+                    <span className="font-bold">{getBookingCount(c)}</span>
+                  </div>
+                </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setSelectedClient(c)}
+                    className="w-full text-center rounded border border-zinc-200 bg-zinc-50 px-3 py-2.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition"
+                  >
+                    View Profile
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Data Table (hidden on mobile) */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 shadow-sm dark:shadow-none transition-colors duration-200">
+            <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+              <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
+                <tr>
+                  <th className="p-4">Client Name</th>
+                  <th className="p-4">Contact Details</th>
+                  <th className="p-4">Age</th>
+                  <th className="p-4 text-center">Sessions Booked</th>
+                  <th className="p-4">Total Spending</th>
+                  <th className="p-4">Last Session</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
+                {filteredClients.map((c) => (
+                  <tr key={c.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/25 transition-colors">
+                    <td className="p-4 font-bold text-zinc-900 dark:text-white">
+                      {c.full_name}
+                    </td>
+                    <td className="p-4 text-xs space-y-0.5">
+                      <span className="text-zinc-750 dark:text-zinc-300 block">{c.email}</span>
+                      <span className="text-zinc-450 dark:text-zinc-500 block">{c.phone}</span>
+                    </td>
+                    <td className="p-4 text-xs text-zinc-700 dark:text-zinc-300">
+                      {c.age} years old
+                    </td>
+                    <td className="p-4 text-center font-bold text-zinc-900 dark:text-white">
+                      {getBookingCount(c)}
+                    </td>
+                    <td className="p-4 font-bold text-orange-500">
+                      ₱{getTotalSpending(c).toLocaleString()}
+                    </td>
+                    <td className="p-4 text-xs text-zinc-500 dark:text-zinc-400">
+                      {getLastBooking(c)}
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => setSelectedClient(c)}
+                        className="rounded border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800"
+                      >
+                        View Profile
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* CLIENT DETAIL DIALOG MODAL */}

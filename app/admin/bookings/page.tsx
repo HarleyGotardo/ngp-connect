@@ -444,7 +444,7 @@ export default function BookingsManager() {
         />
       </div>
 
-      {/* DATA TABLE */}
+      {/* DATA VIEWS */}
       {loading ? (
         <div className="text-center py-20 text-zinc-500 dark:text-zinc-400">
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-orange-500 border-t-transparent mx-auto mb-2" />
@@ -455,56 +455,101 @@ export default function BookingsManager() {
           No bookings match the filters.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/10 shadow-sm dark:shadow-none transition-colors duration-200">
-          <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
-            <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
-              <tr>
-                <th className="p-4">Reference</th>
-                <th className="p-4">Athlete</th>
-                <th className="p-4">Training Service</th>
-                <th className="p-4">Schedule Date & Time</th>
-                <th className="p-4">Total Amount</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
-              {filteredBookings.map((b) => (
-                <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/25 transition-colors">
-                  <td className="p-4 font-black text-orange-500 tracking-wide">
-                    {b.booking_reference}
-                  </td>
-                  <td className="p-4 font-bold text-zinc-900 dark:text-white">
-                    {b.clients?.full_name}
-                  </td>
-                  <td className="p-4 text-xs">
-                    {b.services?.name}
-                  </td>
-                  <td className="p-4 text-xs space-y-0.5">
-                    <span className="font-medium text-zinc-650 dark:text-zinc-300 block">{formatSlotDate(b.start_at)}</span>
-                    <span className="text-orange-500/80 block">{formatSlotTime(b.start_at)} - {formatSlotTime(b.end_at)}</span>
-                  </td>
-                  <td className="p-4 font-bold text-zinc-900 dark:text-white">
-                    ₱{Number(b.total_amount).toLocaleString()}
-                  </td>
-                  <td className="p-4 text-xs">
-                    <span className={`rounded-full px-2.5 py-1 font-bold uppercase ${getStatusBadge(b.status)}`}>
-                      {b.status.replace('_', ' ')}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <button
-                      onClick={() => handleSelectBooking(b)}
-                      className="rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-950 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                    >
-                      Manage
-                    </button>
-                  </td>
+        <>
+          {/* Mobile Card List (hidden on desktop) */}
+          <div className="md:hidden space-y-4">
+            {filteredBookings.map((b) => (
+              <div key={b.id} className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 p-4 space-y-3 shadow-sm dark:shadow-none">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <span className="font-black text-orange-500 text-xs tracking-wide">{b.booking_reference}</span>
+                    <h3 className="font-bold text-zinc-900 dark:text-white text-base mt-0.5">{b.clients?.full_name}</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">{b.services?.name}</p>
+                  </div>
+                  <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${getStatusBadge(b.status)}`}>
+                    {b.status.replace('_', ' ')}
+                  </span>
+                </div>
+                
+                <div className="text-xs space-y-1 border-t border-zinc-100 dark:border-zinc-900/40 pt-2 text-zinc-650 dark:text-zinc-400">
+                  <div className="flex justify-between">
+                    <span>Total Amount:</span>
+                    <span className="font-bold text-zinc-900 dark:text-white">₱{Number(b.total_amount).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Date:</span>
+                    <span>{formatSlotDate(b.start_at)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Time:</span>
+                    <span className="text-orange-500">{formatSlotTime(b.start_at)} - {formatSlotTime(b.end_at)}</span>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => handleSelectBooking(b)}
+                    className="w-full text-center rounded border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs font-semibold text-zinc-950 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition"
+                  >
+                    Manage Booking
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Data Table (hidden on mobile) */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/10 shadow-sm dark:shadow-none transition-colors duration-200">
+            <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+              <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
+                <tr>
+                  <th className="p-4">Reference</th>
+                  <th className="p-4">Athlete</th>
+                  <th className="p-4">Training Service</th>
+                  <th className="p-4">Schedule Date & Time</th>
+                  <th className="p-4">Total Amount</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
+                {filteredBookings.map((b) => (
+                  <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/25 transition-colors">
+                    <td className="p-4 font-black text-orange-500 tracking-wide">
+                      {b.booking_reference}
+                    </td>
+                    <td className="p-4 font-bold text-zinc-900 dark:text-white">
+                      {b.clients?.full_name}
+                    </td>
+                    <td className="p-4 text-xs">
+                      {b.services?.name}
+                    </td>
+                    <td className="p-4 text-xs space-y-0.5">
+                      <span className="font-medium text-zinc-650 dark:text-zinc-300 block">{formatSlotDate(b.start_at)}</span>
+                      <span className="text-orange-500/80 block">{formatSlotTime(b.start_at)} - {formatSlotTime(b.end_at)}</span>
+                    </td>
+                    <td className="p-4 font-bold text-zinc-900 dark:text-white">
+                      ₱{Number(b.total_amount).toLocaleString()}
+                    </td>
+                    <td className="p-4 text-xs">
+                      <span className={`rounded-full px-2.5 py-1 font-bold uppercase ${getStatusBadge(b.status)}`}>
+                        {b.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <button
+                        onClick={() => handleSelectBooking(b)}
+                        className="rounded border border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 px-3 py-1.5 text-xs font-semibold text-zinc-950 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                      >
+                        Manage
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* DETAIL DRAWER PANEL */}

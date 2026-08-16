@@ -99,7 +99,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-zinc-800 dark:bg-zinc-950 dark:text-white transition-colors duration-200">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-50 text-zinc-800 dark:bg-zinc-955 dark:text-white transition-colors duration-200">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-orange-500 border-t-transparent" />
           <span className="text-sm font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 uppercase">Loading Session...</span>
@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-white font-sans transition-colors duration-200">
+    <div className="flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-955 dark:text-white font-sans transition-colors duration-200">
       
       {/* SIDEBAR (DESKTOP) */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/40 backdrop-blur-xl">
@@ -147,7 +147,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
                   isActive
                     ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/10'
-                    : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
+                    : 'text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
                 }`}
               >
                 <span>{item.icon}</span>
@@ -157,9 +157,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           })}
         </nav>
 
-        {/* Footer Area (Theme Toggle + Logout) */}
+        {/* Footer Area */}
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-900 space-y-1">
-          {/* Theme Switcher */}
           <button
             onClick={toggleTheme}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
@@ -167,8 +166,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
             {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
           </button>
-
-          {/* Logout */}
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
@@ -190,7 +187,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Quick theme toggle on mobile */}
             <button
               onClick={toggleTheme}
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
@@ -199,62 +195,91 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen(true)}
               className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
             >
-              {mobileMenuOpen ? '✕' : '☰'}
+              ☰
             </button>
           </div>
         </header>
 
-        {/* MOBILE NAVIGATION OVERLAY */}
+        {/* MOBILE NAVIGATION DRAWER BACKDROP */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-30 bg-white dark:bg-zinc-950 pt-20 px-4 space-y-2 md:hidden animate-in slide-in-from-top duration-200">
-            <nav className="space-y-1 text-sm font-semibold tracking-wide">
-              {navItems.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
-                      isActive
-                        ? 'bg-orange-500 text-black'
-                        : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
-                    }`}
-                  >
-                    <span>{item.icon}</span>
-                    {item.name}
-                  </Link>
-                )
-              })}
-              
-              {/* Mobile overlay theme option */}
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  toggleTheme()
-                }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
-              >
-                <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
-                {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
-              </button>
-
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  handleLogout()
-                }}
-                className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-600 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
-              >
-                <span>🚪</span>
-                Sign Out
-              </button>
-            </nav>
-          </div>
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm md:hidden animate-in fade-in duration-300"
+          />
         )}
+
+        {/* MOBILE NAVIGATION DRAWER SIDEBAR */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-950 p-6 flex flex-col justify-between transition-transform duration-300 ease-in-out md:hidden ${
+            mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {/* Brand & Close button */}
+          <div className="flex h-16 items-center justify-between border-b border-zinc-200 dark:border-zinc-900 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
+                NGP
+              </span>
+              <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white uppercase">Coach Portal</span>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              className="h-8 w-8 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 text-xs flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white"
+            >
+              ✕
+            </button>
+          </div>
+
+          {/* Navigation links */}
+          <nav className="flex-1 space-y-1 mt-6 text-sm font-semibold tracking-wide">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 rounded-lg px-4 py-3 transition-colors ${
+                    isActive
+                      ? 'bg-orange-500 text-black shadow-lg shadow-orange-500/10'
+                      : 'text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white'
+                  }`}
+                >
+                  <span>{item.icon}</span>
+                  {item.name}
+                </Link>
+              )
+            })}
+          </nav>
+
+          {/* Footer Area */}
+          <div className="border-t border-zinc-200 dark:border-zinc-900 pt-4 space-y-1">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false)
+                toggleTheme()
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+            >
+              <span>{theme === 'dark' ? '☀️' : '🌙'}</span>
+              {theme === 'dark' ? 'Light Theme' : 'Dark Theme'}
+            </button>
+
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false)
+                handleLogout()
+              }}
+              className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-sm font-semibold text-zinc-650 hover:bg-zinc-100 hover:text-zinc-950 dark:text-zinc-450 dark:hover:bg-zinc-900 dark:hover:text-white transition-colors"
+            >
+              <span>🚪</span>
+              Sign Out
+            </button>
+          </div>
+        </aside>
 
         {/* MAIN CONTENT AREA */}
         <main className="flex-1 p-6 md:p-8 lg:p-10 relative z-10 max-w-7xl w-full mx-auto">

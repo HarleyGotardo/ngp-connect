@@ -135,7 +135,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Metric 1 */}
         <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/30 p-6 shadow-sm dark:shadow-none transition-colors duration-200">
           <div className="text-zinc-500 text-xs font-semibold uppercase tracking-wider">Today&apos;s Sessions</div>
