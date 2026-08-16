@@ -455,6 +455,65 @@ export default function AvailabilityManager() {
           const padHelper = (num: number) => String(num).padStart(2, '0')
           const dayDateStr = `${day.getFullYear()}-${padHelper(day.getMonth() + 1)}-${padHelper(day.getDate())}`
 
+          // Build list of mobile items
+          const mobileItems: any[] = []
+          const pairedCourtIds = new Set<string>()
+
+          // 1. Check overlapping coach + court
+          coachEventsThisDay.forEach((coach) => {
+            const coachStart = new Date(coach.start_at).getTime()
+            const coachEnd = new Date(coach.end_at).getTime()
+
+            const overlappingCourts = courtEventsThisDay.filter((court) => {
+              const cs = new Date(court.start_at).getTime()
+              const ce = new Date(court.end_at).getTime()
+              return cs < coachEnd && ce > coachStart
+            })
+
+            if (overlappingCourts.length > 0) {
+              overlappingCourts.forEach((court) => pairedCourtIds.add(court.id))
+              const courtNames = overlappingCourts.map(c => c.courts?.name).filter(Boolean).join(', ')
+
+              mobileItems.push({
+                type: 'combined',
+                id: coach.id,
+                title: `Coach JP + ${courtNames || 'Court'}`,
+                start: coach.start_at,
+                end: coach.end_at,
+                status: coach.status,
+                courtName: courtNames,
+              })
+            } else {
+              mobileItems.push({
+                type: 'coach',
+                id: coach.id,
+                title: 'Coach JP Available',
+                start: coach.start_at,
+                end: coach.end_at,
+                status: coach.status,
+              })
+            }
+          })
+
+          // 2. Standalone court blocks (not paired)
+          courtEventsThisDay.forEach((court) => {
+            if (pairedCourtIds.has(court.id)) return
+
+            mobileItems.push({
+              type: 'court',
+              id: court.id,
+              title: court.courts?.name || 'Court Block',
+              start: court.start_at,
+              end: court.end_at,
+              status: court.status,
+              courtName: court.courts?.name,
+              location: court.courts?.location,
+            })
+          })
+
+          // Sort by start time
+          mobileItems.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
+
           return (
             <div key={idx} className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 p-4 space-y-3 shadow-sm dark:shadow-none transition-colors duration-200">
               {/* Day Header */}
@@ -497,63 +556,89 @@ export default function AvailabilityManager() {
                 </div>
               ) : (
                 <div className="space-y-2">
-                  {/* Coach blocks */}
-                  {coachEventsThisDay.map((s) => {
-                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                  {mobileItems.map((item) => {
+                    const displayStart = new Date(item.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                    const displayEnd = new Date(item.end).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
 
-                    return (
-                      <div
-                        key={s.id}
-                        onClick={() => {
-                          handleOpenDetail({
-                            id: s.id,
-                            type: 'coach',
-                            title: 'Coach JP Available',
-                            start: s.start_at,
-                            end: s.end_at,
-                            status: s.status,
-                          })
-                        }}
-                        className="p-3 rounded-lg border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs flex justify-between items-center cursor-pointer hover:bg-orange-500/10 transition"
-                      >
-                        <div className="space-y-0.5">
-                          <div className="font-extrabold uppercase text-[9px] text-orange-500">Coach JP Available</div>
-                          <div className="font-bold text-zinc-900 dark:text-white">{displayStart} - {displayEnd}</div>
+                    if (item.type === 'combined') {
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => {
+                            handleOpenDetail({
+                              id: item.id,
+                              type: 'coach',
+                              title: 'Coach JP + Court Open',
+                              start: item.start,
+                              end: item.end,
+                              status: item.status,
+                            })
+                          }}
+                          className="p-3 rounded-lg border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 text-xs flex justify-between items-center cursor-pointer hover:bg-emerald-500/10 transition"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold uppercase text-[9px] text-emerald-400 flex items-center gap-1">
+                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-orange-500" />
+                              <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 -ml-0.5" />
+                              Both Available
+                            </div>
+                            <div className="font-bold text-zinc-900 dark:text-white">JP + {item.courtName || 'Court'}</div>
+                            <div className="text-[10px] text-zinc-500">{displayStart} - {displayEnd}</div>
+                          </div>
+                          <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{item.status}</span>
                         </div>
-                        <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{s.status}</span>
-                      </div>
-                    )
-                  })}
+                      )
+                    }
 
-                  {/* Court blocks */}
-                  {courtEventsThisDay.map((s) => {
-                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                    if (item.type === 'coach') {
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => {
+                            handleOpenDetail({
+                              id: item.id,
+                              type: 'coach',
+                              title: 'Coach JP Available',
+                              start: item.start,
+                              end: item.end,
+                              status: item.status,
+                            })
+                          }}
+                          className="p-3 rounded-lg border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs flex justify-between items-center cursor-pointer hover:bg-orange-500/10 transition"
+                        >
+                          <div className="space-y-0.5">
+                            <div className="font-extrabold uppercase text-[9px] text-orange-500">Coach JP Available</div>
+                            <div className="font-bold text-zinc-900 dark:text-white">{displayStart} - {displayEnd}</div>
+                          </div>
+                          <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{item.status}</span>
+                        </div>
+                      )
+                    }
 
+                    // Standalone court
                     return (
                       <div
-                        key={s.id}
+                        key={item.id}
                         onClick={() => {
                           handleOpenDetail({
-                            id: s.id,
+                            id: item.id,
                             type: 'court',
-                            title: s.courts?.name || 'Court Block',
-                            start: s.start_at,
-                            end: s.end_at,
-                            courtName: s.courts?.name,
-                            location: s.courts?.location,
-                            status: s.status,
+                            title: item.title,
+                            start: item.start,
+                            end: item.end,
+                            courtName: item.courtName,
+                            location: item.location,
+                            status: item.status,
                           })
                         }}
                         className="p-3 rounded-lg border border-blue-500/20 bg-blue-500/5 text-blue-400 text-xs flex justify-between items-center cursor-pointer hover:bg-blue-500/10 transition"
                       >
                         <div className="space-y-0.5">
                           <div className="font-extrabold uppercase text-[9px] text-blue-500">Court Reserved</div>
-                          <div className="font-bold text-zinc-900 dark:text-white">{s.courts?.name}</div>
+                          <div className="font-bold text-zinc-900 dark:text-white">{item.title}</div>
                           <div className="text-[10px] text-zinc-550">{displayStart} - {displayEnd}</div>
                         </div>
-                        <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{s.status}</span>
+                        <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{item.status}</span>
                       </div>
                     )
                   })}
