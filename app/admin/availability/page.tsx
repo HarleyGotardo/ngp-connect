@@ -428,7 +428,7 @@ export default function AvailabilityManager() {
         </div>
 
         {/* Legend */}
-        <div className="flex items-center gap-4 text-xs font-bold">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-bold">
           <div className="flex items-center gap-1.5">
             <span className="h-3.5 w-3.5 rounded bg-orange-500/20 border border-orange-500/40 block" />
             <span className="text-zinc-650 dark:text-zinc-400">Coach Availability</span>
@@ -436,6 +436,10 @@ export default function AvailabilityManager() {
           <div className="flex items-center gap-1.5">
             <span className="h-3.5 w-3.5 rounded bg-blue-500/20 border border-blue-500/40 block" />
             <span className="text-zinc-650 dark:text-zinc-400">Court Availability</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-3.5 w-3.5 rounded bg-emerald-500/20 border border-emerald-500/40 block" />
+            <span className="text-zinc-650 dark:text-zinc-400">Both Available</span>
           </div>
         </div>
       </div>

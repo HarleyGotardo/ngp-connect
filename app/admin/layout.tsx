@@ -124,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 text-zinc-900 dark:bg-zinc-955 dark:text-white font-sans transition-colors duration-200">
+    <div className="flex min-h-screen w-full max-w-full overflow-x-hidden bg-zinc-50 text-zinc-900 dark:bg-zinc-955 dark:text-white font-sans transition-colors duration-200">
       
       {/* SIDEBAR (DESKTOP) */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/40 backdrop-blur-xl">
@@ -193,7 +193,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* MOBILE HEADER */}
-      <div className="flex flex-1 flex-col md:pl-64">
+      <div className="flex flex-1 flex-col md:pl-64 min-w-0">
         <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 dark:border-zinc-900 dark:bg-zinc-955/80 backdrop-blur-md px-4 md:hidden">
           <div className="flex items-center gap-3">
             <button

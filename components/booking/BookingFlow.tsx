@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/client'
+import CourtMap from '@/components/booking/CourtMap'
 
 interface Service {
   id: string
@@ -18,6 +19,8 @@ interface Court {
   location: string
   description: string
   rental_price: number
+  latitude?: number
+  longitude?: number
 }
 
 interface CoachAvailability {
@@ -77,6 +80,8 @@ interface BookableSlot {
   courtFee: number
   trainingFee: number
   coachName: string | null
+  latitude?: number
+  longitude?: number
 }
 
 const STEPS = ['Service', 'Schedule', 'Details', 'Payment', 'Confirmation']
@@ -132,6 +137,7 @@ export default function BookingFlow({
   const [selectedService, setSelectedService] = useState<Service | null>(null)
   const [activeMode, setActiveMode] = useState<SlotMode>('combined')
   const [selectedSlot, setSelectedSlot] = useState<BookableSlot | null>(null)
+  const [mapModalCourt, setMapModalCourt] = useState<{ name: string; location: string; latitude: number; longitude: number } | null>(null)
 
   // Client Details
   const [fullName, setFullName] = useState('')
@@ -148,7 +154,6 @@ export default function BookingFlow({
   // Payment Details
   const [paymentMethod, setPaymentMethod] = useState('GCash')
   const [referenceNumber, setReferenceNumber] = useState('')
-  const [paymentFile, setPaymentFile] = useState<File | null>(null)
 
   // Execution states
   const [submitting, setSubmitting] = useState(false)
@@ -205,6 +210,8 @@ export default function BookingFlow({
               courtFee: Number(court.rental_price),
               trainingFee: Number(selectedService.price),
               coachName: coachBlock.profiles?.full_name || settings.coach_name,
+              latitude: court.latitude,
+              longitude: court.longitude,
             })
             slotStart = slotEnd
           }
@@ -267,6 +274,8 @@ export default function BookingFlow({
           courtFee: Number(court.rental_price),
           trainingFee: 0,
           coachName: null,
+          latitude: court.latitude,
+          longitude: court.longitude,
         })
         slotStart = slotEnd
       }
@@ -329,8 +338,8 @@ export default function BookingFlow({
   // --------------------------------------------------------------------------
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!paymentFile) {
-      setError('Please upload a screenshot proof of payment.')
+    if (!referenceNumber.trim()) {
+      setError('Please enter the payment transaction reference number.')
       return
     }
 
@@ -371,24 +380,13 @@ export default function BookingFlow({
       const createdBookingRef = bookingResult[0].booking_reference
       setBookingRef(createdBookingRef)
 
-      // Upload payment proof
-      const fileExt = paymentFile.name.split('.').pop()
-      const fileName = `${createdBookingRef}-${Date.now()}.${fileExt}`
-      const filePath = `receipts/${fileName}`
-
-      const { error: uploadErr } = await supabase.storage
-        .from('payment-proofs')
-        .upload(filePath, paymentFile)
-
-      if (uploadErr) throw uploadErr
-
-      // Create payment record
+      // Create payment record without file upload, proof_storage_path set to 'reference-only'
       const { error: paymentErr } = await supabase.from('payments').insert({
         booking_id: createdBookingId,
         payment_method: paymentMethod,
         amount: totalAmount,
-        reference_number: referenceNumber.trim() || null,
-        proof_storage_path: filePath,
+        reference_number: referenceNumber.trim(),
+        proof_storage_path: 'reference-only',
         status: 'pending',
       })
 
@@ -643,9 +641,23 @@ export default function BookingFlow({
                             {formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}
                           </div>
                           {slot.mode !== 'coach_only' && slot.courtName && (
-                            <div className="text-[11px] text-zinc-500 truncate">
-                              🏀 {slot.courtName}
-                              {slot.courtLocation ? ` (${slot.courtLocation})` : ''}
+                            <div className="text-[11px] text-zinc-500 truncate flex items-center gap-1.5 mt-0.5">
+                              <span>🏀 {slot.courtName}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setMapModalCourt({
+                                    name: slot.courtName!,
+                                    location: slot.courtLocation || '',
+                                    latitude: slot.latitude || 10.3157,
+                                    longitude: slot.longitude || 123.8854,
+                                  })
+                                }}
+                                className="text-orange-500 hover:text-orange-400 font-bold hover:underline"
+                              >
+                                (View Map)
+                              </button>
                             </div>
                           )}
                           {slot.mode === 'coach_only' && (
@@ -969,25 +981,17 @@ export default function BookingFlow({
 
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
-                    Upload Payment Proof / Screenshot <span className="text-red-500">*</span>
+                    Payment Reference Number <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="file"
+                    type="text"
                     required
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null
-                      if (file && file.size > 5 * 1024 * 1024) {
-                        setError('File size must be under 5MB.')
-                        setPaymentFile(null)
-                      } else {
-                        setError(null)
-                        setPaymentFile(file)
-                      }
-                    }}
-                    className="mt-2 w-full text-sm text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:uppercase file:tracking-wider file:bg-zinc-800 file:text-white hover:file:bg-zinc-700 cursor-pointer"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    placeholder="Enter GCash/Maya reference number"
+                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
                   />
-                  <p className="mt-1.5 text-[11px] text-zinc-500">Maximum size: 5MB. Acceptable: JPG, PNG, WEBP.</p>
+                  <p className="mt-1.5 text-[11px] text-zinc-500">Please make sure to input the correct transaction reference number for verification.</p>
                 </div>
               </div>
             </div>
@@ -1093,6 +1097,45 @@ export default function BookingFlow({
           </div>
         )}
       </div>
+
+      {/* CLIENT SIDE VIEW MAP MODAL */}
+      {mapModalCourt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-white">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-bold">{mapModalCourt.name}</h3>
+                <p className="text-xs text-zinc-400">📍 {mapModalCourt.location}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setMapModalCourt(null)}
+                className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 text-sm flex items-center justify-center hover:bg-zinc-800 text-zinc-400"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="h-[300px] w-full">
+              <CourtMap
+                latitude={mapModalCourt.latitude}
+                longitude={mapModalCourt.longitude}
+                readOnly={true}
+              />
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <button
+                type="button"
+                onClick={() => setMapModalCourt(null)}
+                className="rounded bg-zinc-100 px-4 py-2 text-xs font-bold text-zinc-900 hover:bg-zinc-200 transition"
+              >
+                Close Map
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

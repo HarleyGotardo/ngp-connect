@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
-import { showSuccess, showError } from '@/lib/swal'
+import { showSuccess, showError, confirmDanger, confirmAction } from '@/lib/swal'
 
 interface Service {
   id: string
@@ -104,6 +104,21 @@ export default function ServicesManager() {
   }
 
   const handleToggleActive = async (service: Service) => {
+    const isDeactivating = service.is_active
+    const confirmed = isDeactivating
+      ? await confirmDanger(
+          'Deactivate Program',
+          `Are you sure you want to deactivate "${service.name}"? It will no longer be visible or bookable by clients.`,
+          'Yes, deactivate'
+        )
+      : await confirmAction(
+          'Activate Program',
+          `Are you sure you want to activate "${service.name}"? It will become visible and bookable by clients.`,
+          'Yes, activate'
+        )
+
+    if (!confirmed) return
+
     try {
       const { error } = await supabase
         .from('services')

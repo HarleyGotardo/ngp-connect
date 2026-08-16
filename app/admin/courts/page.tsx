@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/client'
-import { showSuccess, showError } from '@/lib/swal'
+import { showSuccess, showError, confirmDanger, confirmAction } from '@/lib/swal'
+import CourtMap from '@/components/booking/CourtMap'
 
 interface Court {
   id: string
@@ -12,6 +13,8 @@ interface Court {
   description?: string
   notes?: string
   is_active: boolean
+  latitude?: number
+  longitude?: number
 }
 
 export default function CourtsManager() {
@@ -22,6 +25,7 @@ export default function CourtsManager() {
   const [loading, setLoading] = useState(true)
   const [showFormModal, setShowFormModal] = useState(false)
   const [editingCourt, setEditingCourt] = useState<Court | null>(null)
+  const [mapModalCourt, setMapModalCourt] = useState<Court | null>(null)
 
   // FORM INPUTS
   const [name, setName] = useState('')
@@ -30,6 +34,8 @@ export default function CourtsManager() {
   const [description, setDescription] = useState('')
   const [notes, setNotes] = useState('')
   const [isActive, setIsActive] = useState(true)
+  const [latitude, setLatitude] = useState<number>(10.3157)
+  const [longitude, setLongitude] = useState<number>(123.8854)
 
   const fetchCourts = async () => {
     try {
@@ -60,6 +66,8 @@ export default function CourtsManager() {
     setDescription('')
     setNotes('')
     setIsActive(true)
+    setLatitude(10.3157)
+    setLongitude(123.8854)
     setShowFormModal(true)
   }
 
@@ -71,6 +79,8 @@ export default function CourtsManager() {
     setDescription(court.description || '')
     setNotes(court.notes || '')
     setIsActive(court.is_active)
+    setLatitude(court.latitude || 10.3157)
+    setLongitude(court.longitude || 123.8854)
     setShowFormModal(true)
   }
 
@@ -85,6 +95,8 @@ export default function CourtsManager() {
       description: description || null,
       notes: notes || null,
       is_active: isActive,
+      latitude: Number(latitude),
+      longitude: Number(longitude),
     }
 
     try {
@@ -109,6 +121,21 @@ export default function CourtsManager() {
   }
 
   const handleToggleActive = async (court: Court) => {
+    const isDeactivating = court.is_active
+    const confirmed = isDeactivating
+      ? await confirmDanger(
+          'Deactivate Court',
+          `Are you sure you want to deactivate "${court.name}"? Clients will no longer be able to select it for court rentals.`,
+          'Yes, deactivate'
+        )
+      : await confirmAction(
+          'Activate Court',
+          `Are you sure you want to activate "${court.name}"? It will become visible and rentable for clients.`,
+          'Yes, activate'
+        )
+
+    if (!confirmed) return
+
     try {
       const { error } = await supabase
         .from('courts')
@@ -156,7 +183,15 @@ export default function CourtsManager() {
               <div className="flex justify-between items-start">
                 <div>
                   <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{court.name}</h2>
-                  <span className="text-xs text-zinc-500">📍 {court.location}</span>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5 text-xs text-zinc-500">
+                    <span>📍 {court.location}</span>
+                    <button
+                      onClick={() => setMapModalCourt(court)}
+                      className="text-orange-500 hover:text-orange-400 font-bold hover:underline"
+                    >
+                      (View Map)
+                    </button>
+                  </div>
                 </div>
                 <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase ${
                   court.is_active ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-700'
@@ -166,7 +201,7 @@ export default function CourtsManager() {
               </div>
               
               {court.description && (
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">{court.description}</p>
+                <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed">{court.description}</p>
               )}
 
               <div className="flex gap-4 text-xs">
@@ -178,7 +213,7 @@ export default function CourtsManager() {
 
               {court.notes && (
                 <div className="rounded bg-zinc-50 dark:bg-zinc-950 p-2.5 text-[11px] text-zinc-500 border border-zinc-200 dark:border-zinc-900">
-                  <span className="font-semibold text-zinc-600 dark:text-zinc-400 block mb-0.5">Notes:</span>
+                  <span className="font-semibold text-zinc-650 dark:text-zinc-400 block mb-0.5">Notes:</span>
                   {court.notes}
                 </div>
               )}
@@ -208,11 +243,11 @@ export default function CourtsManager() {
 
       {/* FORM MODAL */}
       {showFormModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
-            <h3 className="text-lg font-bold mb-4">{editingCourt ? 'Edit Court Details' : 'Add Court Venue'}</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white max-h-[90vh] flex flex-col overflow-hidden">
+            <h3 className="text-lg font-bold mb-4 shrink-0">{editingCourt ? 'Edit Court Details' : 'Add Court Venue'}</h3>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto pr-1 flex-1 pb-4">
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Court Name</label>
                 <input
@@ -226,7 +261,7 @@ export default function CourtsManager() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Location</label>
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Location Address</label>
                 <input
                   type="text"
                   required
@@ -235,6 +270,80 @@ export default function CourtsManager() {
                   placeholder="e.g. Mandaue City"
                   className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500"
                 />
+              </div>
+
+              {/* Court Coordinates Picker Map */}
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                    Paste Google Maps Coordinates
+                  </label>
+                  <input
+                    type="text"
+                    onChange={(e) => {
+                      const val = e.target.value.trim()
+                      const parts = val.split(',')
+                      if (parts.length === 2) {
+                        const lat = parseFloat(parts[0].trim())
+                        const lng = parseFloat(parts[1].trim())
+                        if (!isNaN(lat) && !isNaN(lng)) {
+                          setLatitude(lat)
+                          setLongitude(lng)
+                        }
+                      }
+                    }}
+                    placeholder="e.g. 10.3157, 123.8854"
+                    className="w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-450 dark:placeholder-zinc-700 outline-none focus:border-orange-500"
+                  />
+                  <span className="text-[10px] text-zinc-500 block leading-tight">
+                    Tip: Right-click any location in Google Maps, copy the coordinates, and paste them here!
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Latitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      value={latitude}
+                      onChange={(e) => setLatitude(e.target.value === '' ? 0 : Number(e.target.value))}
+                      className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2 text-xs text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Longitude</label>
+                    <input
+                      type="number"
+                      step="any"
+                      required
+                      value={longitude}
+                      onChange={(e) => setLongitude(e.target.value === '' ? 0 : Number(e.target.value))}
+                      className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2 text-xs text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                    Pinpoint Map Location (Drag marker or click map)
+                  </label>
+                  <div className="h-[200px] w-full">
+                    <CourtMap
+                      latitude={latitude}
+                      longitude={longitude}
+                      onChange={(lat, lng) => {
+                        setLatitude(lat)
+                        setLongitude(lng)
+                      }}
+                    />
+                  </div>
+                  <div className="flex gap-4 text-[10px] text-zinc-400 font-bold uppercase tracking-wider pt-1">
+                    <span>Latitude: {latitude.toFixed(6)}</span>
+                    <span>Longitude: {longitude.toFixed(6)}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -256,9 +365,9 @@ export default function CourtsManager() {
                       type="checkbox"
                       checked={isActive}
                       onChange={(e) => setIsActive(e.target.checked)}
-                      className="rounded border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 focus:ring-orange-500 h-4 w-4"
+                      className="rounded border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 text-orange-500 focus:ring-orange-500 h-4 w-4"
                     />
-                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Active</span>
+                    <span className="text-xs font-semibold uppercase tracking-wider text-zinc-650 dark:text-zinc-400">Active</span>
                   </label>
                 </div>
               </div>
@@ -285,11 +394,11 @@ export default function CourtsManager() {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-900">
+              <div className="flex justify-end gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-900 shrink-0">
                 <button
                   type="button"
                   onClick={() => setShowFormModal(false)}
-                  className="rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:border-zinc-855 dark:bg-zinc-850 dark:text-white dark:hover:bg-zinc-800"
+                  className="rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-800 hover:bg-zinc-200 dark:border-zinc-800 dark:bg-zinc-800 dark:text-white dark:hover:bg-zinc-700 px-4 py-2"
                 >
                   Close
                 </button>
@@ -301,6 +410,43 @@ export default function CourtsManager() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW MAP SUB-MODAL */}
+      {mapModalCourt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{mapModalCourt.name}</h3>
+                <p className="text-xs text-zinc-500">📍 {mapModalCourt.location}</p>
+              </div>
+              <button
+                onClick={() => setMapModalCourt(null)}
+                className="h-8 w-8 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-800 dark:border-zinc-700 text-sm flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="h-[300px] w-full">
+              <CourtMap
+                latitude={mapModalCourt.latitude || 10.3157}
+                longitude={mapModalCourt.longitude || 123.8854}
+                readOnly={true}
+              />
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setMapModalCourt(null)}
+                className="rounded bg-zinc-900 dark:bg-zinc-100 border border-zinc-800 dark:border-zinc-350 px-4 py-2 text-xs font-bold text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition"
+              >
+                Close Map
+              </button>
+            </div>
           </div>
         </div>
       )}

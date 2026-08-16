@@ -10,7 +10,7 @@ export default function SettingsManager() {
   // STATE
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [configId, setConfigId] = useState<string | null>(null)
+  const [configId, setConfigId] = useState<number | null>(null)
 
   // INPUTS
   const [businessName, setBusinessName] = useState('')
@@ -30,9 +30,9 @@ export default function SettingsManager() {
   const fetchSettings = async () => {
     try {
       const { data, error } = await supabase
-        .from('business_config')
+        .from('settings')
         .select('*')
-        .limit(1)
+        .eq('id', 1)
         .maybeSingle()
 
       if (error) throw error
@@ -45,10 +45,10 @@ export default function SettingsManager() {
         setContactPhone(data.contact_phone || '')
         setContactEmail(data.contact_email || '')
         setCancellationHours(data.cancellation_hours || 24)
-        setGcashName(data.gcash_account_name || '')
-        setGcashNumber(data.gcash_account_number || '')
-        setMayaName(data.maya_account_name || '')
-        setMayaNumber(data.maya_account_number || '')
+        setGcashName(data.gcash_name || '')
+        setGcashNumber(data.gcash_number || '')
+        setMayaName(data.maya_name || '')
+        setMayaNumber(data.maya_number || '')
         setPaymentInstructions(data.payment_instructions || '')
         setInstagramUrl(data.instagram_url || '')
         setFacebookUrl(data.facebook_url || '')
@@ -76,28 +76,23 @@ export default function SettingsManager() {
       contact_phone: contactPhone || null,
       contact_email: contactEmail || null,
       cancellation_hours: cancellationHours,
-      gcash_account_name: gcashName || null,
-      gcash_account_number: gcashNumber || null,
-      maya_account_name: mayaName || null,
-      maya_account_number: mayaNumber || null,
+      gcash_name: gcashName || null,
+      gcash_number: gcashNumber || null,
+      maya_name: mayaName || null,
+      maya_number: mayaNumber || null,
       payment_instructions: paymentInstructions || null,
       instagram_url: instagramUrl || null,
       facebook_url: facebookUrl || null,
     }
 
     try {
-      if (configId) {
-        const { error } = await supabase
-          .from('business_config')
-          .update(payload)
-          .eq('id', configId)
-        if (error) throw error
-        showSuccess('Saved!', 'Configuration saved successfully!')
-      } else {
-        const { error } = await supabase.from('business_config').insert(payload)
-        if (error) throw error
-        showSuccess('Initialised!', 'Configuration initialised successfully!')
-      }
+      const { error } = await supabase
+        .from('settings')
+        .update(payload)
+        .eq('id', 1)
+
+      if (error) throw error
+      showSuccess('Saved!', 'Configuration saved successfully!')
       fetchSettings()
     } catch (err: any) {
       showError('Error', err.message || 'Failed to save configuration.')
