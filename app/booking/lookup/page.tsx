@@ -167,27 +167,26 @@ export default function BookingLookup() {
         return 'bg-zinc-800 text-zinc-300'
     }
   }
-
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-orange-500 selection:text-black">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-955 text-zinc-900 dark:text-white font-sans selection:bg-orange-500 selection:text-black transition-colors duration-200">
       {/* Background radial accent */}
       <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.1),transparent_50%)] pointer-events-none" />
 
       {/* Header bar */}
-      <header className="sticky top-0 z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-900 bg-white/80 dark:bg-zinc-955/80 backdrop-blur-md transition-colors duration-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2 group">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black tracking-wider transition-transform group-hover:scale-105">
               NGP
             </span>
-            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
+            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-zinc-950 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
               NEW GEN PERFORMANCE
             </span>
           </Link>
 
           <Link
             href="/"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-400 hover:text-white transition"
+            className="text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:text-zinc-800 dark:text-zinc-450 dark:hover:text-white transition"
           >
             ← Back to Home
           </Link>
@@ -196,14 +195,14 @@ export default function BookingLookup() {
 
       <div className="mx-auto max-w-3xl px-4 py-12 relative z-10">
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">Find My Booking</h1>
-          <p className="mt-2 text-sm text-zinc-400">
+          <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-zinc-950 dark:text-white">Find My Booking</h1>
+          <p className="mt-2 text-sm text-zinc-550 dark:text-zinc-400">
             Check payment verification progress, booking status, or request a cancellation.
           </p>
         </div>
 
         {/* LOOKUP SEARCH FORM CARD */}
-        <div className="rounded-2xl border border-zinc-900 bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+        <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl transition-colors duration-200">
           <form onSubmit={handleLookup} className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">

@@ -39,25 +39,25 @@ export default async function BookPage() {
     .eq('status', 'available')
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-orange-500 selection:text-black">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-955 text-zinc-900 dark:text-white font-sans selection:bg-orange-500 selection:text-black transition-colors duration-200">
       {/* Background Graphic Accent */}
-      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.1),transparent_50%)]" />
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.1),transparent_50%)] pointer-events-none" />
 
       {/* Header bar */}
-      <header className="sticky top-0 z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
+      <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-900 bg-white/80 dark:bg-zinc-955/80 backdrop-blur-md transition-colors duration-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2 group">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black tracking-wider transition-transform group-hover:scale-105">
               NGP
             </span>
-            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
+            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-zinc-950 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
               NEW GEN PERFORMANCE
             </span>
           </Link>
 
           <Link
             href="/"
-            className="text-xs font-semibold uppercase tracking-wider text-zinc-400 hover:text-white transition"
+            className="text-xs font-semibold uppercase tracking-wider text-zinc-500 hover:text-zinc-800 dark:text-zinc-450 dark:hover:text-white transition"
           >
             ← Exit Booking
           </Link>
@@ -66,10 +66,10 @@ export default async function BookPage() {
 
       {/* Booking Form Title */}
       <div className="mx-auto max-w-4xl px-4 pt-12 text-center relative z-10">
-        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl text-zinc-950 dark:text-white">
           Reserve Your Training Slot
         </h1>
-        <p className="mt-2 text-sm text-zinc-400 max-w-md mx-auto">
+        <p className="mt-2 text-sm text-zinc-550 dark:text-zinc-400 max-w-md mx-auto">
           Complete self-service scheduling. Lock in Coach JP and your training court instantly.
         </p>
       </div>

@@ -428,7 +428,7 @@ export default function BookingFlow({
   // RENDER
   // --------------------------------------------------------------------------
   return (
-    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 text-white relative z-10">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 text-zinc-900 dark:text-white relative z-10">
       {/* STEP PROGRESS */}
       <div className="mb-10">
         {/* Mobile */}
@@ -454,7 +454,7 @@ export default function BookingFlow({
                   className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold uppercase transition duration-200 ${
                     idx <= currentStep
                       ? 'border-orange-500 bg-orange-500 text-black shadow-lg shadow-orange-500/20'
-                      : 'border-zinc-800 bg-zinc-900 text-zinc-500'
+                      : 'border-zinc-200 bg-zinc-100 text-zinc-450 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500'
                   }`}
                 >
                   {idx + 1}
@@ -470,7 +470,7 @@ export default function BookingFlow({
               {idx < STEPS.length - 1 && (
                 <div
                   className={`mx-2 h-0.5 flex-1 transition duration-200 ${
-                    idx < currentStep ? 'bg-orange-500' : 'bg-zinc-800'
+                    idx < currentStep ? 'bg-orange-500' : 'bg-zinc-200 dark:bg-zinc-800'
                   }`}
                 />
               )}
@@ -487,15 +487,15 @@ export default function BookingFlow({
       )}
 
       {/* STEP BODY */}
-      <div className="rounded-2xl border border-zinc-900 bg-zinc-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl">
+      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl transition-colors duration-200">
 
         {/* ================================================================
             STEP 1: SERVICE SELECTION
         ================================================================ */}
         {currentStep === 0 && (
           <div>
-            <h2 className="text-xl font-bold mb-2">Select Training Program</h2>
-            <p className="text-sm text-zinc-400 mb-6">Choose your basketball training service structure.</p>
+            <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Select Training Program</h2>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Choose your basketball training service structure.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {services.map((service) => (
@@ -508,18 +508,18 @@ export default function BookingFlow({
                   className={`cursor-pointer flex flex-col justify-between p-6 rounded-xl border-2 transition duration-200 ${
                     selectedService?.id === service.id
                       ? 'border-orange-500 bg-orange-500/5'
-                      : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'
+                      : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
                   }`}
                 >
                   <div>
-                    <h3 className="text-lg font-bold">{service.name}</h3>
-                    <p className="mt-2 text-xs text-zinc-400 leading-relaxed">{service.description}</p>
+                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{service.name}</h3>
+                    <p className="mt-2 text-xs text-zinc-555 dark:text-zinc-400 leading-relaxed">{service.description}</p>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-zinc-900 flex justify-between items-baseline">
+                  <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-900 flex justify-between items-baseline">
                     <span className="text-lg font-black text-orange-500">
                       ₱{Number(service.price).toLocaleString()}
                     </span>
-                    <span className="text-xs text-zinc-400">{service.duration_minutes} Mins</span>
+                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{service.duration_minutes} Mins</span>
                   </div>
                 </div>
               ))}
@@ -541,8 +541,8 @@ export default function BookingFlow({
         ================================================================ */}
         {currentStep === 1 && (
           <div>
-            <h2 className="text-xl font-bold mb-1">Select Date &amp; Time</h2>
-            <p className="text-sm text-zinc-400 mb-5">
+            <h2 className="text-xl font-bold mb-1 text-zinc-955 dark:text-white">Select Date &amp; Time</h2>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-5">
               Pick your booking type and choose a slot for{' '}
               <span className="text-orange-500 font-semibold">{selectedService?.name}</span>.
             </p>
@@ -563,14 +563,14 @@ export default function BookingFlow({
                     className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all ${
                       isActive
                         ? `${meta.border} ${meta.bg} ${meta.color} shadow-md`
-                        : 'border-zinc-800 bg-zinc-950 text-zinc-500 hover:border-zinc-700'
+                        : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 text-zinc-500 hover:border-zinc-305 dark:hover:border-zinc-700'
                     }`}
                   >
                     <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
                     {meta.badgeLabel}
                     <span
                       className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-black ${
-                        isActive ? 'bg-white/10' : 'bg-zinc-800'
+                        isActive ? 'bg-black/10 dark:bg-white/10' : 'bg-zinc-205'
                       }`}
                     >
                       {count}
@@ -603,12 +603,12 @@ export default function BookingFlow({
 
             {/* Slot grid */}
             {slotsByMode[activeMode].length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-zinc-800 rounded-xl bg-zinc-950/40">
-                <svg className="mx-auto h-10 w-10 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/40">
+                <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <h3 className="mt-4 text-sm font-bold text-zinc-400">No Slots Available</h3>
-                <p className="mt-1 text-xs text-zinc-500 max-w-xs mx-auto">
+                <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available</h3>
+                <p className="mt-1 text-xs text-zinc-450 dark:text-zinc-500 max-w-xs mx-auto">
                   No {MODE_META[activeMode].badgeLabel.toLowerCase()} slots are scheduled for this program duration. Try a different mode or check back later.
                 </p>
               </div>
@@ -628,13 +628,13 @@ export default function BookingFlow({
                       className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
                         isSelected
                           ? `${meta.border} ${meta.bg} ring-1 ${meta.border}`
-                          : `border-zinc-800 bg-zinc-950 ${meta.hoverBg} hover:border-zinc-700`
+                          : `border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 ${meta.hoverBg} hover:border-zinc-300 dark:hover:border-zinc-700`
                       }`}
                     >
                       <div className="flex justify-between items-start gap-3">
                         {/* Left: date/time/court */}
                         <div className="space-y-1 min-w-0">
-                          <div className="text-xs font-bold text-zinc-300">
+                          <div className="text-xs font-bold text-zinc-800 dark:text-zinc-300">
                             {formatSlotDate(slot.start_at)}
                           </div>
                           <div className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>
@@ -691,7 +691,7 @@ export default function BookingFlow({
             <div className="mt-8 flex justify-between">
               <button
                 onClick={prevStep}
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
+                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
               >
                 Back
               </button>
@@ -711,12 +711,12 @@ export default function BookingFlow({
         ================================================================ */}
         {currentStep === 2 && (
           <div>
-            <h2 className="text-xl font-bold mb-2">Athlete Information</h2>
-            <p className="text-sm text-zinc-400 mb-6">Enter details about the training participant.</p>
+            <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Athlete Information</h2>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Enter details about the training participant.</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -725,11 +725,11 @@ export default function BookingFlow({
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. John Doe"
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Email Address <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -738,11 +738,11 @@ export default function BookingFlow({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. johndoe@gmail.com"
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Contact Number (Mobile) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -751,11 +751,11 @@ export default function BookingFlow({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="e.g. 09171234567"
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Age <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -764,7 +764,7 @@ export default function BookingFlow({
                   value={age}
                   onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
                   placeholder="e.g. 16"
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                 />
               </div>
             </div>
@@ -776,7 +776,7 @@ export default function BookingFlow({
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                       Parent/Guardian Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -785,11 +785,11 @@ export default function BookingFlow({
                       value={guardianName}
                       onChange={(e) => setGuardianName(e.target.value)}
                       placeholder="e.g. Robert Doe"
-                      className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-750 outline-none focus:border-orange-500"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-750 outline-none focus:border-orange-500 transition-colors duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                       Guardian Contact Number <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -798,7 +798,7 @@ export default function BookingFlow({
                       value={guardianPhone}
                       onChange={(e) => setGuardianPhone(e.target.value)}
                       placeholder="e.g. 09177654321"
-                      className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-750 outline-none focus:border-orange-500"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-755 outline-none focus:border-orange-500 transition-colors duration-200"
                     />
                   </div>
                 </div>
@@ -806,41 +806,41 @@ export default function BookingFlow({
             )}
 
             <div className="mt-8 border-t border-zinc-800 pt-8 space-y-6">
-              <h3 className="text-base font-bold">Athlete Bio (Optional)</h3>
+              <h3 className="text-base font-bold text-zinc-900 dark:text-white">Athlete Bio (Optional)</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Court Position</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Court Position</label>
                   <input
                     type="text"
                     value={position}
                     onChange={(e) => setPosition(e.target.value)}
                     placeholder="e.g. Guard, Forward"
-                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Experience Level</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Experience Level</label>
                   <input
                     type="text"
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
                     placeholder="e.g. High School Varsity"
-                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">Specific Skill Goals</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">Specific Skill Goals</label>
                   <input
                     type="text"
                     value={goals}
                     onChange={(e) => setGoals(e.target.value)}
                     placeholder="e.g. Finishing, Handles"
-                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Any Other Notes for Coach JP
                 </label>
                 <textarea
@@ -848,7 +848,7 @@ export default function BookingFlow({
                   onChange={(e) => setClientNotes(e.target.value)}
                   placeholder="Tell Coach JP about any injuries, specific needs, or schedule notes..."
                   rows={3}
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500 resize-none"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 resize-none transition-colors duration-200"
                 />
               </div>
             </div>
@@ -856,7 +856,7 @@ export default function BookingFlow({
             <div className="mt-8 flex justify-between">
               <button
                 onClick={prevStep}
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
+                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
               >
                 Back
               </button>
@@ -875,13 +875,13 @@ export default function BookingFlow({
         ================================================================ */}
         {currentStep === 3 && (
           <form onSubmit={handleSubmitBooking}>
-            <h2 className="text-xl font-bold mb-2">Review &amp; Submit Payment</h2>
-            <p className="text-sm text-zinc-400 mb-6">Review your booking and upload manual payment details.</p>
+            <h2 className="text-xl font-bold mb-2 text-zinc-955 dark:text-white">Review &amp; Submit Payment</h2>
+            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Review your booking and upload manual payment details.</p>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
               {/* Invoice Summary */}
-              <div className="lg:col-span-5 rounded-xl border border-zinc-800 bg-zinc-950 p-6 space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-400 border-b border-zinc-900 pb-2">
+              <div className="lg:col-span-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-900 pb-2">
                   Session Invoice
                 </h3>
 
@@ -896,17 +896,17 @@ export default function BookingFlow({
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Service Program</span>
-                    <span className="font-semibold">{selectedService?.name}</span>
+                    <span className="font-semibold text-zinc-850 dark:text-zinc-300">{selectedService?.name}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Training Fee</span>
-                    <span className={`font-semibold ${selectedSlot?.trainingFee === 0 ? 'text-zinc-600 line-through' : ''}`}>
+                    <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.trainingFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
                       ₱{selectedSlot?.trainingFee.toLocaleString() ?? 0}
                     </span>
                   </div>
-                  <div className="flex justify-between border-b border-zinc-900 pb-3">
+                  <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-900 pb-3">
                     <span className="text-zinc-500">Court Rental Fee</span>
-                    <span className={`font-semibold ${selectedSlot?.courtFee === 0 ? 'text-zinc-600 line-through' : ''}`}>
+                    <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.courtFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
                       ₱{selectedSlot?.courtFee.toLocaleString() ?? 0}
                     </span>
                   </div>
@@ -916,23 +916,23 @@ export default function BookingFlow({
                   </div>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-zinc-900 space-y-2 text-xs text-zinc-500">
+                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-900 space-y-2 text-xs text-zinc-550 dark:text-zinc-500">
                   <div>
-                    📅 <span className="font-semibold text-zinc-300">{selectedSlot ? formatSlotDate(selectedSlot.start_at) : ''}</span>
+                    📅 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot ? formatSlotDate(selectedSlot.start_at) : ''}</span>
                   </div>
                   <div>
-                    🕒 <span className="font-semibold text-zinc-300">
+                    🕒 <span className="font-semibold text-zinc-800 dark:text-zinc-300">
                       {selectedSlot ? `${formatSlotTime(selectedSlot.start_at)} – ${formatSlotTime(selectedSlot.end_at)}` : ''}
                     </span>
                   </div>
                   {selectedSlot?.courtName && (
                     <div>
-                      🏀 <span className="font-semibold text-zinc-300">{selectedSlot.courtName}</span>
+                      🏀 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
                     </div>
                   )}
                   {!selectedSlot?.courtName && (
                     <div>
-                      🏋️ <span className="font-semibold text-zinc-300">Coach JP · No court</span>
+                      🏋️ <span className="font-semibold text-zinc-800 dark:text-zinc-300">Coach JP · No court</span>
                     </div>
                   )}
                 </div>
@@ -944,35 +944,35 @@ export default function BookingFlow({
                   <h4 className="text-sm font-bold uppercase tracking-wider text-orange-500 mb-3">
                     Manual Payment Instructions
                   </h4>
-                  <p className="text-xs text-zinc-400 leading-relaxed mb-4">
+                  <p className="text-xs text-zinc-550 dark:text-zinc-400 leading-relaxed mb-4">
                     {settings.payment_instructions}
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {settings.gcash_number && (
-                      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+                      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
                         <div className="text-xs text-zinc-500">GCash</div>
-                        <div className="font-bold text-white text-sm mt-0.5">{settings.gcash_number}</div>
-                        <div className="text-[10px] text-zinc-400">{settings.gcash_name}</div>
+                        <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.gcash_number}</div>
+                        <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.gcash_name}</div>
                       </div>
                     )}
                     {settings.maya_number && (
-                      <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
+                      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
                         <div className="text-xs text-zinc-500">Maya</div>
-                        <div className="font-bold text-white text-sm mt-0.5">{settings.maya_number}</div>
-                        <div className="text-[10px] text-zinc-400">{settings.maya_name}</div>
+                        <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.maya_number}</div>
+                        <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.maya_name}</div>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                     Payment Channel
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white outline-none focus:border-orange-500"
+                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 transition-colors"
                   >
                     <option value="GCash">GCash</option>
                     <option value="Maya">Maya</option>
@@ -980,7 +980,7 @@ export default function BookingFlow({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                     Payment Reference Number <span className="text-red-500">*</span>
                   </label>
                   <input
@@ -989,19 +989,19 @@ export default function BookingFlow({
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
                     placeholder="Enter GCash/Maya reference number"
-                    className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                   />
-                  <p className="mt-1.5 text-[11px] text-zinc-500">Please make sure to input the correct transaction reference number for verification.</p>
+                  <p className="mt-1.5 text-[11px] text-zinc-550 dark:text-zinc-500">Please make sure to input the correct transaction reference number for verification.</p>
                 </div>
               </div>
             </div>
 
-            <div className="mt-8 border-t border-zinc-800 pt-8 flex justify-between">
+            <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-8 flex justify-between">
               <button
                 type="button"
                 onClick={prevStep}
                 disabled={submitting}
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition disabled:opacity-50"
+                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition disabled:opacity-50 px-6 py-3 text-sm font-bold uppercase tracking-wider"
               >
                 Back
               </button>
@@ -1027,13 +1027,13 @@ export default function BookingFlow({
               </svg>
             </div>
 
-            <h2 className="text-2xl font-black text-white sm:text-3xl">Booking Submitted Successfully</h2>
-            <p className="mt-3 text-sm text-zinc-400 max-w-md mx-auto">
+            <h2 className="text-2xl font-black text-zinc-950 dark:text-white sm:text-3xl">Booking Submitted Successfully</h2>
+            <p className="mt-3 text-sm text-zinc-550 dark:text-zinc-400 max-w-md mx-auto">
               Your request has been received. Coach JP will review your payment and update your booking status shortly.
             </p>
 
-            <div className="mt-8 mx-auto max-w-sm rounded-xl border border-zinc-800 bg-zinc-950 p-6 space-y-4 text-left">
-              <div className="text-center border-b border-zinc-900 pb-3">
+            <div className="mt-8 mx-auto max-w-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4 text-left">
+              <div className="text-center border-b border-zinc-200 dark:border-zinc-900 pb-3">
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-widest block">Booking Reference</span>
                 <span className="text-lg font-black text-orange-500 tracking-wider mt-1 block">{bookingRef}</span>
               </div>
@@ -1055,35 +1055,35 @@ export default function BookingFlow({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Service</span>
-                  <span className="font-semibold text-zinc-300">{selectedService?.name}</span>
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedService?.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500">Time</span>
-                  <span className="font-semibold text-zinc-300">
+                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">
                     {selectedSlot ? `${formatSlotDate(selectedSlot.start_at)} · ${formatSlotTime(selectedSlot.start_at)}` : ''}
                   </span>
                 </div>
                 {selectedSlot?.courtName && (
                   <div className="flex justify-between">
                     <span className="text-zinc-500">Court</span>
-                    <span className="font-semibold text-zinc-300">{selectedSlot.courtName}</span>
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
                   </div>
                 )}
-                <div className="flex justify-between border-t border-zinc-900 pt-2 text-sm font-bold">
+                <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-900 pt-2 text-sm font-bold">
                   <span className="text-zinc-400">Total Charged</span>
-                  <span className="text-white">₱{totalAmount.toLocaleString()}</span>
+                  <span className="text-zinc-950 dark:text-white">₱{totalAmount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
-            <div className="mt-6 rounded-lg bg-zinc-950/40 border border-zinc-900 p-4 max-w-sm mx-auto text-xs text-zinc-400">
+            <div className="mt-6 rounded-lg bg-zinc-100 dark:bg-zinc-955/40 border border-zinc-200 dark:border-zinc-900 p-4 max-w-sm mx-auto text-xs text-zinc-550 dark:text-zinc-400">
               💡 <span className="font-semibold">Tip:</span> Save your Reference Code. You can use it to look up your status and cancel if needed.
             </div>
 
             <div className="mt-8 flex justify-center gap-4">
               <button
                 onClick={() => router.push('/')}
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-6 py-3 text-sm font-bold uppercase tracking-wider text-white hover:bg-zinc-800 transition"
+                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-850 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
               >
                 Go to Home
               </button>
