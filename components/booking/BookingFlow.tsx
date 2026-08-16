@@ -1100,23 +1100,26 @@ export default function BookingFlow({
 
       {/* CLIENT SIDE VIEW MAP MODAL */}
       {mapModalCourt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl border border-zinc-800 bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <h3 className="text-lg font-bold">{mapModalCourt.name}</h3>
-                <p className="text-xs text-zinc-400">📍 {mapModalCourt.location}</p>
+                <p className="text-xs text-zinc-550 dark:text-zinc-400 mt-0.5">📍 {mapModalCourt.location}</p>
+                <p className="text-[10px] font-mono text-zinc-450 dark:text-zinc-500 mt-1">
+                  Coords: {mapModalCourt.latitude.toFixed(6)}, {mapModalCourt.longitude.toFixed(6)}
+                </p>
               </div>
               <button
                 type="button"
                 onClick={() => setMapModalCourt(null)}
-                className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 text-sm flex items-center justify-center hover:bg-zinc-800 text-zinc-400"
+                className="h-8 w-8 rounded-full bg-zinc-100 hover:bg-zinc-200 border border-zinc-200 dark:bg-zinc-900 dark:border-zinc-800 text-sm flex items-center justify-center dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400 transition"
               >
                 ✕
               </button>
             </div>
             
-            <div className="h-[300px] w-full">
+            <div className="h-[300px] w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
               <CourtMap
                 latitude={mapModalCourt.latitude}
                 longitude={mapModalCourt.longitude}
@@ -1124,11 +1127,19 @@ export default function BookingFlow({
               />
             </div>
             
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-between items-center mt-4">
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${mapModalCourt.latitude},${mapModalCourt.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 px-4 py-2 text-xs font-bold text-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800 transition flex items-center gap-1.5"
+              >
+                🗺️ View in Google Maps
+              </a>
               <button
                 type="button"
                 onClick={() => setMapModalCourt(null)}
-                className="rounded bg-zinc-100 px-4 py-2 text-xs font-bold text-zinc-900 hover:bg-zinc-200 transition"
+                className="rounded-lg bg-orange-500 hover:bg-orange-400 px-4 py-2 text-xs font-black uppercase tracking-wider text-black transition"
               >
                 Close Map
               </button>
