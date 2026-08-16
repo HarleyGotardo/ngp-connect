@@ -1,36 +1,101 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# New Gen Performance (NGP) Booking System MVP
 
-## Getting Started
+Welcome to the **New Gen Performance (NGP)** Booking System, a self-service training registration application built for Coach Coach Paul. This project turns manual calendar messaging and payment checks into a streamlined self-service basketball coaching booking system.
 
-First, run the development server:
+---
 
+## 🚀 Key Stack
+- **Framework:** Next.js (App Router, Tailwind CSS v4)
+- **Database:** Supabase (PostgreSQL, Row-Level Security)
+- **Authentication:** Supabase Auth (Admin/Coach authentication)
+- **Storage:** Supabase Storage (Private bucket for manual payment proof uploads)
+
+---
+
+## 🛠️ Installation & Local Setup
+
+### 1. Clone & Install Dependencies
+Ensure you have [Node.js](https://nodejs.org) installed, then run:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment Variables
+Create a `.env.local` file in the root directory (based on `.env.example`):
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_your_anon_key_here
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Start Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 💾 Supabase Database & Migration Setup
 
-To learn more about Next.js, take a look at the following resources:
+Since local Docker setups vary, follow these steps to configure your remote Supabase Project:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Step 1: Run Database Schema
+1. Open your [Supabase Dashboard](https://supabase.com).
+2. Go to the **SQL Editor** tab in the left sidebar.
+3. Click **New Query**.
+4. Copy the complete SQL commands from [`supabase/migrations/001_initial_schema.sql`](file:///c:/Users/Harley/Documents/Projects/ngp-connect/supabase/migrations/001_initial_schema.sql) and paste them into the editor.
+5. Click **Run**. This will create the database tables, triggers, RPC transaction functions, seed active services, default venues, default business configurations, and RLS policies.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Step 2: Storage Bucket Configuration
+The migration automatically provisions the private bucket `payment-proofs` and hooks up Row-Level Security policies. However, verify the bucket configuration on the dashboard:
+1. Navigate to the **Storage** tab on Supabase.
+2. Ensure a bucket named `payment-proofs` is present and marked as **Private**.
+3. Under RLS Policies, make sure the following policies are active:
+   - **Upload:** `Allow public uploads of payment proofs` (Insert allowed for `anon` role, target: `bucket_id = 'payment-proofs'`).
+   - **View:** `Allow admins to view payment proofs` (Select allowed for `authenticated` role, target: `bucket_id = 'payment-proofs'`).
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 👤 Admin / Coach Portal Setup
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To access the Coach Dashboard, you must register the admin account:
+1. Go to the **Authentication** tab on your Supabase dashboard.
+2. Click **Add User** -> **Create User**.
+3. Input the admin's email and password.
+4. Expand **User Metadata** and add a property named `full_name` with the value `Coach Paul`.
+5. Click **Save**.
+6. The trigger `on_auth_user_created` will automatically copy this new user into the public `profiles` table as a coach.
+7. Go to [http://localhost:3000/admin/login](http://localhost:3000/admin/login) to sign in to the Coach Dashboard!
+
+---
+
+## 🏀 Business Workflows
+
+### Client Self-Service Flow:
+1. **Visit Landing Page:** Read Coach JP's bio, values, and testimonials.
+2. **Book Session:** Select a service (1-on-1, 2-on-1, or Group).
+3. **Select Date & Slot:** View matched slots derived from overlapping Coach Availability and Court Availability schedules.
+4. **Detail Entry:** Input client info (under 18 dynamically prompts for parent authorization details).
+5. **Manual GCash/Maya Payment:** GCash account name, number, and payment instructions are fetched dynamically. Client uploads a receipt screenshot and enters the Reference Code.
+6. **Confirmation:** Receives a unique booking reference (`NGP-YYYY-XXXXX`) indicating `Pending Confirmation`.
+
+### Client Booking Lookup & Cancellation:
+- Clients can lookup booking statuses or details without an account by visiting `/booking/lookup` and searching with their Reference Code and Email/Phone.
+- Self-service cancellation is permitted if the training starts **at least 24 hours in the future**. This updates the slot back to `available` and submits a manual refund request.
+
+### Coach Administration:
+- Log in to `/admin` to see key statistics (Today's sessions, Pending payments, Active refunds) and today's schedule.
+- **Bookings Management:** Filter bookings, click "Verify" on pending payments to view uploaded screenshots using secure signed URLs, and approve/reject payments.
+- **Schedule Management:** Add/delete manual availability time blocks for the coach and courts.
+- **CRUD Operations:** Dynamically configure active services, courts (rental pricing), settings (GCash/Maya details), client listings, and active testimonials.
+
+---
+
+## 🏗️ Production Deployment
+
+To compile a clean production bundle of the application, run:
+```bash
+npm run build
+```
+
+This compiles optimized client-side assets and ensures static page shell generations resolve correctly.
