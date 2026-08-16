@@ -5,6 +5,14 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --color-zinc-550: #61616a;
+  --color-zinc-555: #5b5b63;
+  --color-zinc-650: #484850;
+  --color-zinc-655: #43434b;
+  --color-zinc-850: #1f1f23;
+  --color-zinc-855: #1b1b1f;
+  --color-zinc-955: #0a0a0c;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);

@@ -235,7 +235,7 @@ export default function ClientsManager() {
               {/* Bio block */}
               <div className="space-y-3">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500">Bio & Contact Details</h3>
-                <div className="grid grid-cols-2 gap-4 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-955 p-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-955 p-4">
                   <div>
                     <span className="text-zinc-550 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Full Name</span>
                     <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 block">{selectedClient.full_name}</span>
@@ -253,7 +253,7 @@ export default function ClientsManager() {
                     <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 block">{selectedClient.email}</span>
                   </div>
                   {selectedClient.guardian_name && (
-                    <div className="col-span-2 mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-900/60 grid grid-cols-2 gap-4">
+                    <div className="col-span-2 mt-2 pt-2 border-t border-zinc-200 dark:border-zinc-900/60 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <span className="text-zinc-555 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Guardian Name</span>
                         <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 block">{selectedClient.guardian_name}</span>
@@ -272,7 +272,7 @@ export default function ClientsManager() {
                 <div className="space-y-3">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Basketball Profile</h3>
                   <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-955 p-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {selectedClient.basketball_position && (
                         <div>
                           <span className="text-zinc-555 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Position</span>

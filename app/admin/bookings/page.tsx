@@ -418,7 +418,22 @@ export default function BookingsManager() {
 
       {/* FILTER SHEETS */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center bg-white dark:bg-zinc-900/30 p-4 rounded-xl border border-zinc-200 dark:border-zinc-900 shadow-sm dark:shadow-none transition-colors duration-200">
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+        {/* Mobile Filter select */}
+        <div className="block sm:hidden w-full">
+          <label className="block text-xs font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Filter Booking Status</label>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full rounded-lg border border-zinc-200 bg-zinc-50 dark:border-zinc-850 dark:bg-zinc-950 px-4 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+          >
+            {['ALL', 'PENDING_PAYMENT', 'PAYMENT_REVIEW', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'REJECTED'].map((st) => (
+              <option key={st} value={st}>{st.replace('_', ' ')}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Desktop Filter buttons */}
+        <div className="hidden sm:flex flex-wrap gap-2 w-full sm:w-auto">
           {['ALL', 'PENDING_PAYMENT', 'PAYMENT_REVIEW', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'REJECTED'].map((st) => (
             <button
               key={st}
@@ -554,265 +569,271 @@ export default function BookingsManager() {
 
       {/* DETAIL DRAWER PANEL */}
       {selectedBooking && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-zinc-950 border-l border-zinc-900 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-200">
-          <div>
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-zinc-900 pb-4 mb-6">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest block">Booking Details</span>
-                <span className="text-xl font-black text-orange-500 tracking-wide mt-1 block">
-                  {selectedBooking.booking_reference}
-                </span>
+        <>
+          <div
+            onClick={() => setSelectedBooking(null)}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+          />
+          <div className="fixed inset-y-0 right-0 z-50 w-full max-w-xl bg-zinc-950 border-l border-zinc-900 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between animate-in slide-in-from-right duration-200">
+            <div>
+              {/* Header */}
+              <div className="flex justify-between items-center border-b border-zinc-900 pb-4 mb-6">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-widest block">Booking Details</span>
+                  <span className="text-xl font-black text-orange-500 tracking-wide mt-1 block">
+                    {selectedBooking.booking_reference}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setSelectedBooking(null)}
+                  className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 text-sm flex items-center justify-center hover:bg-zinc-800 text-zinc-405"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="h-8 w-8 rounded-lg bg-zinc-900 border border-zinc-800 text-sm flex items-center justify-center hover:bg-zinc-800"
-              >
-                ✕
-              </button>
-            </div>
 
-            {/* Core Info list */}
-            <div className="space-y-6 text-sm">
-              {/* Athlete Bio */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Athlete Details</h3>
-                <div className="grid grid-cols-2 gap-4 rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs">
-                  <div>
-                    <span className="text-zinc-500 block">Name</span>
-                    <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.full_name}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block">Age</span>
-                    <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.age} years old</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block">Phone</span>
-                    <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.phone}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block">Email</span>
-                    <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.email}</span>
-                  </div>
-                  {selectedBooking.clients?.guardian_name && (
-                    <div className="col-span-2 mt-2 pt-2 border-t border-zinc-900/60 grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="text-orange-500/80 font-bold block">Parent/Guardian</span>
-                        <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.guardian_name}</span>
-                      </div>
-                      <div>
-                        <span className="text-orange-500/80 font-bold block">Guardian Contact</span>
-                        <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.guardian_phone}</span>
-                      </div>
+              {/* Core Info list */}
+              <div className="space-y-6 text-sm">
+                {/* Athlete Bio */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Athlete Details</h3>
+                  <div className="grid grid-cols-2 gap-4 rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs">
+                    <div>
+                      <span className="text-zinc-500 block">Name</span>
+                      <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.full_name}</span>
                     </div>
-                  )}
-                  {/* Basketball details */}
-                  {(selectedBooking.clients?.basketball_position || selectedBooking.clients?.experience_level || selectedBooking.clients?.training_goals) && (
-                    <div className="col-span-2 mt-2 pt-2 border-t border-zinc-900/60 space-y-2">
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedBooking.clients?.basketball_position && (
+                    <div>
+                      <span className="text-zinc-500 block">Age</span>
+                      <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.age} years old</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block">Phone</span>
+                      <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.phone}</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block">Email</span>
+                      <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.email}</span>
+                    </div>
+                    {selectedBooking.clients?.guardian_name && (
+                      <div className="col-span-2 mt-2 pt-2 border-t border-zinc-900/60 grid grid-cols-2 gap-4">
+                        <div>
+                          <span className="text-orange-500/80 font-bold block">Parent/Guardian</span>
+                          <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.guardian_name}</span>
+                        </div>
+                        <div>
+                          <span className="text-orange-500/80 font-bold block">Guardian Contact</span>
+                          <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.guardian_phone}</span>
+                        </div>
+                      </div>
+                    )}
+                    {/* Basketball details */}
+                    {(selectedBooking.clients?.basketball_position || selectedBooking.clients?.experience_level || selectedBooking.clients?.training_goals) && (
+                      <div className="col-span-2 mt-2 pt-2 border-t border-zinc-900/60 space-y-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          {selectedBooking.clients?.basketball_position && (
+                            <div>
+                              <span className="text-zinc-500 block">Position</span>
+                              <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.basketball_position}</span>
+                            </div>
+                          )}
+                          {selectedBooking.clients?.experience_level && (
+                            <div>
+                              <span className="text-zinc-500 block">Experience</span>
+                              <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.experience_level}</span>
+                            </div>
+                          )}
+                        </div>
+                        {selectedBooking.clients?.training_goals && (
                           <div>
-                            <span className="text-zinc-500 block">Position</span>
-                            <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.basketball_position}</span>
-                          </div>
-                        )}
-                        {selectedBooking.clients?.experience_level && (
-                          <div>
-                            <span className="text-zinc-500 block">Experience</span>
-                            <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.experience_level}</span>
+                            <span className="text-zinc-500 block">Training Goals</span>
+                            <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.training_goals}</span>
                           </div>
                         )}
                       </div>
-                      {selectedBooking.clients?.training_goals && (
-                        <div>
-                          <span className="text-zinc-500 block">Training Goals</span>
-                          <span className="font-semibold text-white mt-0.5 block">{selectedBooking.clients?.training_goals}</span>
+                    )}
+                    {selectedBooking.clients?.notes && (
+                      <div className="col-span-2 mt-1">
+                        <span className="text-zinc-500 block">Client Notes</span>
+                        <p className="text-zinc-400 mt-0.5 leading-relaxed">{selectedBooking.clients?.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Schedule and Court details */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Session Schedule</h3>
+                  <div className="rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Selected Program</span>
+                      <span className="font-bold text-white">{selectedBooking.services?.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Court Location</span>
+                      <span className="font-semibold text-white">{selectedBooking.courts?.name} ({selectedBooking.courts?.location})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Session Slot</span>
+                      <span className="font-semibold text-orange-500">
+                        {formatSlotDate(selectedBooking.start_at)} · {formatSlotTime(selectedBooking.start_at)} - {formatSlotTime(selectedBooking.end_at)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-t border-zinc-900/60 pt-2 font-bold">
+                      <span className="text-zinc-400">Total Invoice</span>
+                      <span className="text-white">₱{Number(selectedBooking.total_amount).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Manual Payment Information */}
+                {selectedBooking.payments && selectedBooking.payments.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Payment Receipt</h3>
+                    <div className="rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs space-y-3">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Method</span>
+                        <span className="font-semibold text-white">{selectedBooking.payments[0].payment_method}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Reference Number</span>
+                        <span className="font-bold text-orange-500 tracking-wider">{selectedBooking.payments[0].reference_number || 'None Provided'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Payment Status</span>
+                        <span className="font-bold uppercase text-zinc-300">{selectedBooking.payments[0].status}</span>
+                      </div>
+                      
+                      {/* Signed image URL */}
+                      {receiptUrl && (
+                        <div className="mt-3 pt-3 border-t border-zinc-900/60">
+                          <span className="text-zinc-500 block mb-2">Screenshot Proof:</span>
+                          <a
+                            href={receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 p-2 hover:border-zinc-700 transition"
+                          >
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={receiptUrl}
+                              alt="Receipt Screenshot"
+                              className="max-h-48 mx-auto object-contain rounded"
+                            />
+                            <span className="text-[10px] text-center text-orange-500 mt-2 block font-semibold hover:underline">
+                              🔍 Open Image in New Window
+                            </span>
+                          </a>
                         </div>
                       )}
                     </div>
-                  )}
-                  {selectedBooking.clients?.notes && (
-                    <div className="col-span-2 mt-1">
-                      <span className="text-zinc-500 block">Client Notes</span>
-                      <p className="text-zinc-400 mt-0.5 leading-relaxed">{selectedBooking.clients?.notes}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                  </div>
+                )}
 
-              {/* Schedule and Court details */}
-              <div className="space-y-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Session Schedule</h3>
-                <div className="rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Selected Program</span>
-                    <span className="font-bold text-white">{selectedBooking.services?.name}</span>
+                {/* Cancellation Reason details */}
+                {selectedBooking.cancellation_reason && (
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-xs">
+                    <span className="text-red-400 font-bold uppercase tracking-wider block">Cancellation Info</span>
+                    <p className="text-zinc-400 mt-1 leading-relaxed">{selectedBooking.cancellation_reason}</p>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Court Location</span>
-                    <span className="font-semibold text-white">{selectedBooking.courts?.name} ({selectedBooking.courts?.location})</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Session Slot</span>
-                    <span className="font-semibold text-orange-500">
-                      {formatSlotDate(selectedBooking.start_at)} · {formatSlotTime(selectedBooking.start_at)} - {formatSlotTime(selectedBooking.end_at)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-t border-zinc-900/60 pt-2 font-bold">
-                    <span className="text-zinc-400">Total Invoice</span>
-                    <span className="text-white">₱{Number(selectedBooking.total_amount).toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
+                )}
 
-              {/* Manual Payment Information */}
-              {selectedBooking.payments && selectedBooking.payments.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Payment Receipt</h3>
-                  <div className="rounded-xl border border-zinc-900 bg-zinc-900/20 p-4 text-xs space-y-3">
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Method</span>
-                      <span className="font-semibold text-white">{selectedBooking.payments[0].payment_method}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Reference Number</span>
-                      <span className="font-bold text-orange-500 tracking-wider">{selectedBooking.payments[0].reference_number || 'None Provided'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Payment Status</span>
-                      <span className="font-bold uppercase text-zinc-300">{selectedBooking.payments[0].status}</span>
-                    </div>
-                    
-                    {/* Signed image URL */}
-                    {receiptUrl && (
-                      <div className="mt-3 pt-3 border-t border-zinc-900/60">
-                        <span className="text-zinc-500 block mb-2">Screenshot Proof:</span>
-                        <a
-                          href={receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block rounded-lg overflow-hidden border border-zinc-800 bg-zinc-950 p-2 hover:border-zinc-700 transition"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={receiptUrl}
-                            alt="Receipt Screenshot"
-                            className="max-h-48 mx-auto object-contain rounded"
-                          />
-                          <span className="text-[10px] text-center text-orange-500 mt-2 block font-semibold hover:underline">
-                            🔍 Open Image in New Window
-                          </span>
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Cancellation Reason details */}
-              {selectedBooking.cancellation_reason && (
-                <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-xs">
-                  <span className="text-red-400 font-bold uppercase tracking-wider block">Cancellation Info</span>
-                  <p className="text-zinc-400 mt-1 leading-relaxed">{selectedBooking.cancellation_reason}</p>
-                </div>
-              )}
-
-              {/* Refunds Details */}
-              {selectedBooking.refunds && selectedBooking.refunds.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-red-500">Refund Required</h3>
-                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-xs space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Amount to Refund</span>
-                      <span className="font-bold text-white">₱{Number(selectedBooking.refunds[0].amount).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-zinc-500">Status</span>
-                      <span className="font-bold uppercase text-red-400">{selectedBooking.refunds[0].status}</span>
-                    </div>
-                    {selectedBooking.refunds[0].processed_at && (
+                {/* Refunds Details */}
+                {selectedBooking.refunds && selectedBooking.refunds.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-red-500">Refund Required</h3>
+                    <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-4 text-xs space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-zinc-500">Processed At</span>
-                        <span>{formatSlotDate(selectedBooking.refunds[0].processed_at)}</span>
+                        <span className="text-zinc-500">Amount to Refund</span>
+                        <span className="font-bold text-white">₱{Number(selectedBooking.refunds[0].amount).toLocaleString()}</span>
                       </div>
-                    )}
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Status</span>
+                        <span className="font-bold uppercase text-red-400">{selectedBooking.refunds[0].status}</span>
+                      </div>
+                      {selectedBooking.refunds[0].processed_at && (
+                        <div className="flex justify-between">
+                          <span className="text-zinc-500">Processed At</span>
+                          <span>{formatSlotDate(selectedBooking.refunds[0].processed_at)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Internal Admin Coach Notes */}
-              <div className="space-y-2 pt-4 border-t border-zinc-900/60">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                  Internal Coach Notes
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={adminNoteInput}
-                    onChange={(e) => setAdminNoteInput(e.target.value)}
-                    placeholder="Add private note for this athlete..."
-                    className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-white placeholder-zinc-700 outline-none focus:border-orange-500"
-                  />
-                  <button
-                    onClick={handleUpdateAdminNotes}
-                    className="rounded bg-zinc-800 border border-zinc-700 px-3 py-2 text-xs font-semibold hover:bg-zinc-700"
-                  >
-                    Save
-                  </button>
+                {/* Internal Admin Coach Notes */}
+                <div className="space-y-2 pt-4 border-t border-zinc-900/60">
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                    Internal Coach Notes
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={adminNoteInput}
+                      onChange={(e) => setAdminNoteInput(e.target.value)}
+                      placeholder="Add private note for this athlete..."
+                      className="flex-1 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-xs text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                    />
+                    <button
+                      onClick={handleUpdateAdminNotes}
+                      className="rounded bg-zinc-800 border border-zinc-700 px-3 py-2 text-xs font-semibold hover:bg-zinc-700 text-white"
+                    >
+                      Save
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* Action Row */}
+            <div className="mt-8 border-t border-zinc-900 pt-4 flex flex-wrap gap-2 justify-end">
+              {/* PAYMENT VERIFICATION BUTTONS */}
+              {selectedBooking.status === 'PAYMENT_REVIEW' && (
+                <>
+                  <button
+                    onClick={() => setShowRejectModal(true)}
+                    className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500 hover:text-white"
+                  >
+                    Reject Payment
+                  </button>
+                  <button
+                    onClick={handleConfirmPayment}
+                    className="rounded-lg bg-green-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-green-500"
+                  >
+                    Confirm Payment
+                  </button>
+                </>
+              )}
+
+              {/* CONFIRMED SESSION ACTIONS */}
+              {selectedBooking.status === 'CONFIRMED' && (
+                <>
+                  <button
+                    onClick={handleAdminCancelBooking}
+                    className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500/10"
+                  >
+                    Cancel Booking
+                  </button>
+                  <button
+                    onClick={handleCompleteSession}
+                    className="rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400"
+                  >
+                    Mark Completed
+                  </button>
+                </>
+              )}
+
+              {/* REFUND ACTIONS */}
+              {selectedBooking.refunds && selectedBooking.refunds.length > 0 && selectedBooking.refunds[0].status === 'pending' && (
+                <button
+                  onClick={handleMarkRefunded}
+                  className="rounded-lg bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-red-500"
+                >
+                  Mark Refunded
+                </button>
+              )}
+            </div>
           </div>
-
-          {/* Action Row */}
-          <div className="mt-8 border-t border-zinc-900 pt-4 flex flex-wrap gap-2 justify-end">
-            {/* PAYMENT VERIFICATION BUTTONS */}
-            {selectedBooking.status === 'PAYMENT_REVIEW' && (
-              <>
-                <button
-                  onClick={() => setShowRejectModal(true)}
-                  className="rounded-lg border border-red-500/30 bg-red-500/10 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500 hover:text-white"
-                >
-                  Reject Payment
-                </button>
-                <button
-                  onClick={handleConfirmPayment}
-                  className="rounded-lg bg-green-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-green-500"
-                >
-                  Confirm Payment
-                </button>
-              </>
-            )}
-
-            {/* CONFIRMED SESSION ACTIONS */}
-            {selectedBooking.status === 'CONFIRMED' && (
-              <>
-                <button
-                  onClick={handleAdminCancelBooking}
-                  className="rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-red-400 hover:bg-red-500/10"
-                >
-                  Cancel Booking
-                </button>
-                <button
-                  onClick={handleCompleteSession}
-                  className="rounded-lg bg-orange-500 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-black hover:bg-orange-400"
-                >
-                  Mark Completed
-                </button>
-              </>
-            )}
-
-            {/* REFUND ACTIONS */}
-            {selectedBooking.refunds && selectedBooking.refunds.length > 0 && selectedBooking.refunds[0].status === 'pending' && (
-              <button
-                onClick={handleMarkRefunded}
-                className="rounded-lg bg-red-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-red-500"
-              >
-                Mark Refunded
-              </button>
-            )}
-          </div>
-        </div>
+        </>
       )}
 
       {/* REJECT PAYMENT MODAL */}

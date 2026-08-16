@@ -178,12 +178,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* MOBILE HEADER */}
       <div className="flex flex-1 flex-col md:pl-64">
-        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 dark:border-zinc-900 dark:bg-zinc-950/80 backdrop-blur-md px-4 md:hidden">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
-              NGP
-            </span>
-            <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">COACH PORTAL</span>
+        <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-zinc-200 bg-white/80 dark:border-zinc-900 dark:bg-zinc-955/80 backdrop-blur-md px-4 md:hidden">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
+              aria-label="Open sidebar menu"
+            >
+              ☰
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
+                NGP
+              </span>
+              <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">COACH PORTAL</span>
+            </div>
           </div>
 
           <div className="flex items-center gap-2">
@@ -193,12 +202,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               title="Toggle Theme"
             >
               {theme === 'dark' ? '☀️' : '🌙'}
-            </button>
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white"
-            >
-              ☰
             </button>
           </div>
         </header>

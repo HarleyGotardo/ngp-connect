@@ -170,36 +170,60 @@ export default function AdminDashboard() {
               No sessions scheduled for today.
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
-                <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900">
-                  <tr>
-                    <th className="pb-3">Time</th>
-                    <th className="pb-3">Athlete</th>
-                    <th className="pb-3">Service</th>
-                    <th className="pb-3">Court</th>
-                    <th className="pb-3">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
-                  {todaySchedule.map((b) => (
-                    <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/10 transition-colors">
-                      <td className="py-3 font-semibold text-orange-500">
-                        {formatTime(b.start_at)}
-                      </td>
-                      <td className="py-3 text-zinc-900 dark:text-white font-semibold">{b.clients?.full_name}</td>
-                      <td className="py-3">{b.services?.name}</td>
-                      <td className="py-3 text-xs">{b.courts?.name}</td>
-                      <td className="py-3">
-                        <span className={`rounded-full px-2 py-0.5 font-bold uppercase ${getStatusBadge(b.status)}`}>
-                          {b.status.replace('_', ' ')}
-                        </span>
-                      </td>
+            <>
+              {/* Mobile Card List (hidden on desktop) */}
+              <div className="md:hidden space-y-3">
+                {todaySchedule.map((b) => (
+                  <div key={b.id} className="rounded-lg border border-zinc-200 dark:border-zinc-800 p-4 space-y-2 bg-zinc-50 dark:bg-zinc-950/20">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <span className="text-xs font-semibold text-orange-500">{formatTime(b.start_at)}</span>
+                        <h4 className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{b.clients?.full_name}</h4>
+                      </div>
+                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase ${getStatusBadge(b.status)}`}>
+                        {b.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div className="text-xs text-zinc-500 space-y-0.5">
+                      <div>⚡ {b.services?.name}</div>
+                      <div>🏀 {b.courts?.name}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Desktop Data Table (hidden on mobile) */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+                  <thead className="text-xs uppercase font-bold text-zinc-500 tracking-wider border-b border-zinc-200 dark:border-zinc-900">
+                    <tr>
+                      <th className="pb-3">Time</th>
+                      <th className="pb-3">Athlete</th>
+                      <th className="pb-3">Service</th>
+                      <th className="pb-3">Court</th>
+                      <th className="pb-3">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-100 dark:divide-zinc-900/40">
+                    {todaySchedule.map((b) => (
+                      <tr key={b.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-900/10 transition-colors">
+                        <td className="py-3 font-semibold text-orange-500">
+                          {formatTime(b.start_at)}
+                        </td>
+                        <td className="py-3 text-zinc-900 dark:text-white font-semibold">{b.clients?.full_name}</td>
+                        <td className="py-3">{b.services?.name}</td>
+                        <td className="py-3 text-xs">{b.courts?.name}</td>
+                        <td className="py-3">
+                          <span className={`rounded-full px-2 py-0.5 font-bold uppercase ${getStatusBadge(b.status)}`}>
+                            {b.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           )}
         </div>
 

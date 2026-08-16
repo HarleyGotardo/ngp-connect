@@ -212,7 +212,7 @@ export default function ServicesManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Duration (Minutes)</label>
                   <input

@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import { createClient } from '@/lib/server'
+import Navbar from '@/components/Navbar'
 
 // Fallback demo data in case the database queries fail or are empty
 const FALLBACK_SETTINGS = {
@@ -91,44 +92,7 @@ export default async function Home() {
       <div className="absolute top-[800px] left-0 right-0 h-[500px] bg-[radial-gradient(circle_at_bottom_left,rgba(249,115,22,0.06),transparent_50%)] pointer-events-none" />
 
       {/* HEADER / NAVIGATION */}
-      <header className="sticky top-0 z-50 border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500 font-black text-base text-black tracking-wider transition-transform group-hover:scale-105">
-              NGP
-            </span>
-            <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
-              NEW GEN PERFORMANCE
-            </span>
-          </Link>
-
-          {/* Desktop Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold tracking-wide text-zinc-400">
-            <a href="#about" className="transition hover:text-white">NEW GEN METHOD</a>
-            <a href="#services" className="transition hover:text-white">PROGRAMS</a>
-            <a href="#how-it-works" className="transition hover:text-white">HOW TO BOOK</a>
-            <a href="#coach" className="transition hover:text-white">THE COACH</a>
-            <a href="#reviews" className="transition hover:text-white">ATHLETE STORIES</a>
-          </nav>
-
-          {/* Action links */}
-          <div className="flex items-center gap-4">
-            <Link
-              href="/booking/lookup"
-              className="text-xs font-medium text-zinc-500 hover:text-zinc-300 transition"
-            >
-              Lookup Booking
-            </Link>
-            <Link
-              href="/book"
-              className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 transition hover:bg-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 focus:ring-offset-zinc-950"
-            >
-              Book Now
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* HERO SECTION (Hormozi Frame: Hook, Pain Point, Grand Slam Offer CTA) */}
       <section className="relative overflow-hidden py-24 sm:py-32">

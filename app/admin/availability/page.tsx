@@ -394,8 +394,125 @@ export default function AvailabilityManager() {
         </div>
       </div>
 
-      {/* WEEK CALENDAR GRID */}
-      <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/10">
+      {/* Mobile Agenda View (hidden on desktop) */}
+      <div className="block md:hidden space-y-4">
+        {weekDays.map((day, idx) => {
+          const isToday = isSameDay(day, new Date())
+          const coachEventsThisDay = coachAvails.filter(s => isSameDay(new Date(s.start_at), day))
+          const courtEventsThisDay = courtAvails.filter(s => isSameDay(new Date(s.start_at), day))
+          const hasEvents = coachEventsThisDay.length > 0 || courtEventsThisDay.length > 0
+
+          const padHelper = (num: number) => String(num).padStart(2, '0')
+          const dayDateStr = `${day.getFullYear()}-${padHelper(day.getMonth() + 1)}-${padHelper(day.getDate())}`
+
+          return (
+            <div key={idx} className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 p-4 space-y-3 shadow-sm dark:shadow-none transition-colors duration-200">
+              {/* Day Header */}
+              <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900/60 pb-2">
+                <div className="flex items-center gap-2">
+                  <span className={`h-6 w-6 rounded-full flex items-center justify-center font-extrabold text-xs ${
+                    isToday ? 'bg-orange-500 text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white'
+                  }`}>
+                    {day.getDate()}
+                  </span>
+                  <span className="font-bold text-sm text-zinc-900 dark:text-white uppercase tracking-wider">
+                    {day.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Manila' })}
+                  </span>
+                </div>
+                
+                {/* Plus button to add slot directly for this day */}
+                <button
+                  onClick={() => {
+                    setFormDate(dayDateStr)
+                    setFormStartTime('09:00')
+                    setFormEndTime('10:00')
+                    setFormType('coach')
+                    setSelectionDay(day)
+                    setShowAddModal(true)
+                  }}
+                  className="h-7 w-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-extrabold hover:bg-orange-500 hover:text-black transition"
+                  title="Add block for this day"
+                >
+                  ＋
+                </button>
+              </div>
+
+              {/* Day's Events */}
+              {!hasEvents ? (
+                <div className="text-center py-4 text-xs text-zinc-400 dark:text-zinc-500 italic">
+                  No availability blocks scheduled
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {/* Coach blocks */}
+                  {coachEventsThisDay.map((s) => {
+                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          handleOpenDetail({
+                            id: s.id,
+                            type: 'coach',
+                            title: 'Coach JP Available',
+                            start: s.start_at,
+                            end: s.end_at,
+                            status: s.status,
+                          })
+                        }}
+                        className="p-3 rounded-lg border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs flex justify-between items-center cursor-pointer hover:bg-orange-500/10 transition"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="font-extrabold uppercase text-[9px] text-orange-500">Coach JP Available</div>
+                          <div className="font-bold text-zinc-900 dark:text-white">{displayStart} - {displayEnd}</div>
+                        </div>
+                        <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{s.status}</span>
+                      </div>
+                    )
+                  })}
+
+                  {/* Court blocks */}
+                  {courtEventsThisDay.map((s) => {
+                    const displayStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                    const displayEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => {
+                          handleOpenDetail({
+                            id: s.id,
+                            type: 'court',
+                            title: s.courts?.name || 'Court Block',
+                            start: s.start_at,
+                            end: s.end_at,
+                            courtName: s.courts?.name,
+                            location: s.courts?.location,
+                            status: s.status,
+                          })
+                        }}
+                        className="p-3 rounded-lg border border-blue-500/20 bg-blue-500/5 text-blue-400 text-xs flex justify-between items-center cursor-pointer hover:bg-blue-500/10 transition"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="font-extrabold uppercase text-[9px] text-blue-500">Court Reserved</div>
+                          <div className="font-bold text-zinc-900 dark:text-white">{s.courts?.name}</div>
+                          <div className="text-[10px] text-zinc-550">{displayStart} - {displayEnd}</div>
+                        </div>
+                        <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{s.status}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* WEEK CALENDAR GRID (hidden on mobile) */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/10">
         <div className="min-w-[800px] select-none">
           {/* Day Headers */}
           <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b border-zinc-200 dark:border-zinc-900 bg-zinc-100 dark:bg-zinc-900/20 py-2 text-center text-xs">
@@ -596,7 +713,7 @@ export default function AvailabilityManager() {
                     required
                     value={formCourtId}
                     onChange={(e) => setFormCourtId(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
                   >
                     {courts.map(c => (
                       <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
@@ -613,12 +730,12 @@ export default function AvailabilityManager() {
                   required
                   value={formDate}
                   onChange={(e) => setFormDate(e.target.value)}
-                  className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                  className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
                 />
               </div>
 
               {/* Times */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-650 dark:text-zinc-400">Start Time</label>
                   <input
@@ -626,7 +743,7 @@ export default function AvailabilityManager() {
                     required
                     value={formStartTime}
                     onChange={(e) => setFormStartTime(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
                   />
                 </div>
                 <div>
@@ -636,7 +753,7 @@ export default function AvailabilityManager() {
                     required
                     value={formEndTime}
                     onChange={(e) => setFormEndTime(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-55 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
                   />
                 </div>
               </div>

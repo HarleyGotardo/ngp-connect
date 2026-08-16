@@ -325,7 +325,22 @@ export default function BookingFlow({
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 text-white relative z-10">
       {/* STEP PROGRESS INDICATOR */}
       <div className="mb-10">
-        <div className="flex items-center justify-between">
+        {/* Mobile progress layout */}
+        <div className="block sm:hidden space-y-3">
+          <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-zinc-405">
+            <span>Step {currentStep + 1} of {STEPS.length}</span>
+            <span className="text-orange-500">{STEPS[currentStep]}</span>
+          </div>
+          <div className="w-full bg-zinc-950 rounded-full h-2 border border-zinc-900 overflow-hidden">
+            <div
+              className="bg-orange-500 h-full rounded-full transition-all duration-300 shadow-md shadow-orange-500/20"
+              style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Desktop progress layout */}
+        <div className="hidden sm:flex items-center justify-between">
           {STEPS.map((step, idx) => (
             <div key={step} className="flex flex-1 items-center last:flex-initial">
               <div className="flex flex-col items-center">
@@ -440,7 +455,7 @@ export default function BookingFlow({
                     <div
                       key={idx}
                       onClick={() => setSelectedSlot(slot)}
-                      className={`cursor-pointer p-4 rounded-xl border-2 transition duration-200 flex justify-between items-center ${isSelected
+                      className={`cursor-pointer p-4 rounded-xl border-2 transition duration-200 flex flex-col sm:flex-row justify-between sm:items-center gap-3 ${isSelected
                         ? 'border-orange-500 bg-orange-500/5'
                         : 'border-zinc-800 bg-zinc-950 hover:border-zinc-700'
                         }`}
@@ -452,14 +467,14 @@ export default function BookingFlow({
                         <div className="text-xs text-orange-500 font-semibold uppercase tracking-wider">
                           {formatSlotTime(slot.start_at)} - {formatSlotTime(slot.end_at)}
                         </div>
-                        <div className="text-xs text-zinc-400">
+                        <div className="text-xs text-zinc-400 break-words">
                           🏀 {slot.courtName} ({slot.courtLocation})
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <div className="text-xs text-zinc-500">Court Fee</div>
-                        <div className="text-sm font-bold text-white">₱{slot.courtFee}</div>
+                      <div className="text-left sm:text-right border-t border-zinc-900/60 pt-2 sm:border-t-0 sm:pt-0">
+                        <span className="text-[10px] text-zinc-550 block uppercase font-bold tracking-wider">Court Fee</span>
+                        <div className="text-sm font-bold text-white mt-0.5">₱{slot.courtFee}</div>
                       </div>
                     </div>
                   )
@@ -724,7 +739,7 @@ export default function BookingFlow({
                   </p>
 
                   {/* Dynamic payment options based on settings */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {settings.gcash_number && (
                       <div className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
                         <div className="text-xs text-zinc-500">GCash</div>

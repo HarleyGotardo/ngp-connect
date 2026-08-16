@@ -180,7 +180,7 @@ export default function BookingLookup() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black tracking-wider transition-transform group-hover:scale-105">
               NGP
             </span>
-            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent">
+            <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
               NEW GEN PERFORMANCE
             </span>
           </Link>
