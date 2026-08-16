@@ -31,7 +31,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Settings', href: '/admin/settings', icon: '⚙️' },
   ]
 
+  const isLoginPage = pathname === '/admin/login'
+
   useEffect(() => {
+    if (isLoginPage) {
+      setLoading(false)
+      return
+    }
+
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
 
@@ -54,12 +61,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     checkUser()
-  }, [router, supabase])
+  }, [router, supabase, isLoginPage])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.refresh()
     router.push('/admin/login')
+  }
+
+  if (isLoginPage) {
+    return <>{children}</>
   }
 
   if (loading) {
