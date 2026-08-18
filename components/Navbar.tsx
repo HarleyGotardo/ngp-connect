@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Menu, X, Sun, Moon } from 'lucide-react'
+import LogoIcon from './icons/LogoIcon'
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
@@ -86,10 +87,10 @@ export default function Navbar() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 shadow-md shadow-orange-500/20 font-black text-sm text-black tracking-wider transition-transform group-hover:scale-105">
-              NGP
-            </span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500 text-black shadow-md shadow-orange-500/20 transition-transform group-hover:scale-105">
+              <LogoIcon className="h-5.5 w-5.5 text-black" />
+            </div>
             <span className="font-extrabold text-sm tracking-widest bg-gradient-to-r from-zinc-950 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block uppercase">
               NEW GEN PERFORMANCE
             </span>

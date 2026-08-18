@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/client'
+import LogoIcon from '@/components/icons/LogoIcon'
 import {
   LayoutDashboard,
   Ticket,
@@ -129,10 +130,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* SIDEBAR (DESKTOP) */}
       <aside className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 border-r border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/40 backdrop-blur-xl">
         {/* Brand */}
-        <div className="flex h-16 items-center gap-2 px-6 border-b border-zinc-200 dark:border-zinc-900">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
-            NGP
-          </span>
+        <div className="flex h-16 items-center gap-2.5 px-6 border-b border-zinc-200 dark:border-zinc-900">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-black">
+            <LogoIcon className="h-5 w-5 text-black" />
+          </div>
           <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white uppercase">Coach Portal</span>
         </div>
 
@@ -203,10 +204,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Menu className="h-5 w-5" />
             </button>
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
-                NGP
-              </span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-black">
+                <LogoIcon className="h-5 w-5 text-black" />
+              </div>
               <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white">COACH PORTAL</span>
             </div>
           </div>
@@ -238,10 +239,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         >
           {/* Brand & Close button */}
           <div className="flex h-16 items-center justify-between border-b border-zinc-200 dark:border-zinc-900 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black">
-                NGP
-              </span>
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-black">
+                <LogoIcon className="h-5 w-5 text-black" />
+              </div>
               <span className="font-extrabold text-sm tracking-tight text-zinc-900 dark:text-white uppercase">Coach Portal</span>
             </div>
             <button

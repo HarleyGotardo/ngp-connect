@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/client'
+import LogoIcon from '@/components/icons/LogoIcon'
 
 export default function AdminLogin() {
   const router = useRouter()
@@ -67,8 +68,8 @@ export default function AdminLogin() {
       <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/80 p-8 shadow-2xl backdrop-blur-xl">
         {/* Brand Logo & Title */}
         <div className="mb-8 text-center">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 font-black text-xl text-black tracking-widest shadow-lg shadow-orange-500/20">
-            NGP
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-black shadow-lg shadow-orange-500/20">
+            <LogoIcon className="h-7 w-7 text-black" />
           </div>
           <h1 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
             Coach Portal

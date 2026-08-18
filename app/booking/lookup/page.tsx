@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/client'
+import LogoIcon from '@/components/icons/LogoIcon'
 
 interface BookingDetails {
   id: string
@@ -175,10 +176,10 @@ export default function BookingLookup() {
       {/* Header bar */}
       <header className="sticky top-0 z-50 border-b border-zinc-200 dark:border-zinc-900 bg-white/80 dark:bg-zinc-955/80 backdrop-blur-md transition-colors duration-200">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2 group">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-black text-sm text-black tracking-wider transition-transform group-hover:scale-105">
-              NGP
-            </span>
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-black transition-transform group-hover:scale-105">
+              <LogoIcon className="h-5 w-5 text-black" />
+            </div>
             <span className="font-extrabold text-base tracking-tight bg-gradient-to-r from-zinc-950 to-zinc-600 dark:from-white dark:to-zinc-400 bg-clip-text text-transparent hidden sm:inline-block">
               NEW GEN PERFORMANCE
             </span>
