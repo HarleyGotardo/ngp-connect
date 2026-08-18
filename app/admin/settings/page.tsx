@@ -26,6 +26,10 @@ export default function SettingsManager() {
   const [paymentInstructions, setPaymentInstructions] = useState('')
   const [instagramUrl, setInstagramUrl] = useState('')
   const [facebookUrl, setFacebookUrl] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [bankAccountName, setBankAccountName] = useState('')
+  const [bankAccountNumber, setBankAccountNumber] = useState('')
+  const [bankQrPath, setBankQrPath] = useState('/bank_qr.jpg')
 
   const fetchSettings = async () => {
     try {
@@ -52,6 +56,10 @@ export default function SettingsManager() {
         setPaymentInstructions(data.payment_instructions || '')
         setInstagramUrl(data.instagram_url || '')
         setFacebookUrl(data.facebook_url || '')
+        setBankName(data.bank_name || '')
+        setBankAccountName(data.bank_account_name || '')
+        setBankAccountNumber(data.bank_account_number || '')
+        setBankQrPath(data.bank_qr_path || '/bank_qr.jpg')
       }
     } catch (err: any) {
       console.error(err.message)
@@ -83,6 +91,10 @@ export default function SettingsManager() {
       payment_instructions: paymentInstructions || null,
       instagram_url: instagramUrl || null,
       facebook_url: facebookUrl || null,
+      bank_name: bankName || null,
+      bank_account_name: bankAccountName || null,
+      bank_account_number: bankAccountNumber || null,
+      bank_qr_path: bankQrPath || '/bank_qr.jpg',
     }
 
     try {
@@ -181,7 +193,7 @@ export default function SettingsManager() {
         <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/10 p-6 space-y-6 shadow-sm dark:shadow-none">
           <h2 className="text-lg font-bold border-b border-zinc-200 dark:border-zinc-900 pb-2 text-zinc-950 dark:text-white">Manual Payment Channels</h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* GCash */}
             <div className="space-y-4 rounded-lg bg-zinc-50 dark:bg-zinc-955 p-4 border border-zinc-200 dark:border-zinc-900">
               <h3 className="text-xs font-bold uppercase tracking-wider text-orange-500">GCash Option</h3>
@@ -228,7 +240,40 @@ export default function SettingsManager() {
               </div>
             </div>
 
-            <div className="sm:col-span-2">
+            {/* Bank Transfer */}
+            <div className="space-y-4 rounded-lg bg-zinc-50 dark:bg-zinc-955 p-4 border border-zinc-200 dark:border-zinc-900">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-500">Bank Transfer Option</h3>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Bank Name</label>
+                <input
+                  type="text"
+                  placeholder="e.g. BDO Unibank"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="mt-1 w-full rounded border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Account Name</label>
+                <input
+                  type="text"
+                  value={bankAccountName}
+                  onChange={(e) => setBankAccountName(e.target.value)}
+                  className="mt-1 w-full rounded border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Account Number</label>
+                <input
+                  type="text"
+                  value={bankAccountNumber}
+                  onChange={(e) => setBankAccountNumber(e.target.value)}
+                  className="mt-1 w-full rounded border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 px-3 py-2 text-xs text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                />
+              </div>
+            </div>
+
+            <div className="sm:col-span-3">
               <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Manual Payment Instructions</label>
               <textarea
                 value={paymentInstructions}

@@ -18,7 +18,8 @@ import {
   Moon,
   LogOut,
   Menu,
-  X
+  X,
+  CreditCard
 } from 'lucide-react'
 
 interface Profile {
@@ -43,6 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Bookings', href: '/admin/bookings', icon: Ticket },
     { name: 'Availability', href: '/admin/availability', icon: Calendar },
     { name: 'Services', href: '/admin/services', icon: Zap },
+    { name: 'Packages', href: '/admin/packages', icon: CreditCard },
     { name: 'Courts', href: '/admin/courts', icon: MapPin },
     { name: 'Clients', href: '/admin/clients', icon: Users },
     { name: 'Testimonials', href: '/admin/reviews', icon: Star },

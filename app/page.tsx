@@ -85,6 +85,19 @@ export default async function Home() {
     console.error('Failed to load database values:', error)
   }
 
+  let packages: any[] = []
+  try {
+    const supabase = await createClient()
+    const { data: dbPackages } = await supabase
+      .from('packages')
+      .select('*')
+      .eq('is_active', true)
+      .order('price', { ascending: true })
+    if (dbPackages) packages = dbPackages
+  } catch (error) {
+    console.error('Failed to load packages:', error)
+  }
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-955 text-zinc-900 dark:text-white font-sans selection:bg-orange-500 selection:text-black transition-colors duration-200">
       {/* BACKGROUND GRAPHIC GRADIENTS */}
@@ -254,6 +267,65 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* PACKAGES SECTION */}
+      {packages && packages.length > 0 && (
+        <section className="border-t border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 py-20 sm:py-28" id="packages">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-orange-500 font-bold">Bundled Savings</h2>
+              <p className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl text-zinc-955 dark:text-white">
+                Training Session Packages
+              </p>
+              <p className="mt-2 text-xs text-zinc-550 dark:text-zinc-400">
+                Purchase sessions in bulk and book your slots whenever you are ready!
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+              {packages.map((pkg) => {
+                return (
+                  <div
+                    key={pkg.id}
+                    className="flex flex-col rounded-2xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/50 overflow-hidden hover:border-orange-500/20 transition duration-200"
+                  >
+                    {/* Card Header */}
+                    <div className="p-8 border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
+                      <div className="inline-flex rounded-full bg-orange-500/10 text-orange-500 border border-orange-500/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                        {pkg.number_of_sessions} Sessions included
+                      </div>
+                      <h3 className="text-lg font-bold text-zinc-900 dark:text-white mt-4 leading-snug">{pkg.name}</h3>
+                      <div className="mt-4 flex items-baseline">
+                        {pkg.original_price && (
+                          <span className="text-sm text-zinc-450 line-through mr-2 font-semibold">
+                            ₱{Number(pkg.original_price).toLocaleString()}
+                          </span>
+                        )}
+                        <span className="text-3xl font-extrabold text-orange-500">
+                          ₱{Number(pkg.price).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="flex-1 p-8 flex flex-col justify-between">
+                      <p className="text-zinc-655 dark:text-zinc-400 text-xs leading-relaxed mb-8">
+                        {pkg.description}
+                      </p>
+                      <Link
+                        href="/book?tab=packages"
+                        className="w-full flex items-center justify-center rounded-xl bg-orange-500 border border-orange-500 px-4 py-3 text-sm font-bold uppercase tracking-wider text-black transition hover:bg-orange-400 hover:border-orange-400"
+                      >
+                        Buy Package Deal
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* HOW BOOKING WORKS (Zero friction highlight) */}
       <section className="border-t border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 py-20 sm:py-28" id="how-it-works">

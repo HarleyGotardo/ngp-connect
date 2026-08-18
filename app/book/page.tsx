@@ -27,6 +27,13 @@ export default async function BookPage() {
     .eq('id', 1)
     .single()
 
+  // Fetch Packages
+  const { data: packages } = await supabase
+    .from('packages')
+    .select('*')
+    .eq('is_active', true)
+    .order('price', { ascending: true })
+
   // Fetch Coach Availabilities
   const { data: coachAvails } = await supabase
     .from('coach_availability')
@@ -91,6 +98,7 @@ export default async function BookPage() {
         }}
         coachAvails={(coachAvails as any) || []}
         courtAvails={(courtAvails as any) || []}
+        packages={packages || []}
       />
     </div>
   )

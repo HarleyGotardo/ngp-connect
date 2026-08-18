@@ -158,7 +158,7 @@ export default function BookingsManager() {
     
     // If has payment proof, load signed url
     const payment = b.payments?.[0]
-    if (payment?.proof_storage_path) {
+    if (payment?.proof_storage_path && payment.proof_storage_path !== 'reference-only') {
       getReceiptSignedUrl(payment.proof_storage_path)
     }
   }
@@ -186,19 +186,34 @@ export default function BookingsManager() {
   const handleConfirmPayment = async () => {
     if (!selectedBooking) return
     const payment = selectedBooking.payments?.[0]
-    if (!payment) return
 
     try {
-      // 1. Verify Payment Record
-      const { error: payErr } = await supabase
-        .from('payments')
-        .update({
-          status: 'verified',
-          verified_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', payment.id)
-      if (payErr) throw payErr
+      if (payment) {
+        // 1. Verify existing Payment Record
+        const { error: payErr } = await supabase
+          .from('payments')
+          .update({
+            status: 'verified',
+            verified_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', payment.id)
+        if (payErr) throw payErr
+      } else {
+        // Create manual/cash Payment Record
+        const { error: payErr } = await supabase
+          .from('payments')
+          .insert({
+            booking_id: selectedBooking.id,
+            payment_method: 'Manual / Admin Confirm',
+            amount: selectedBooking.total_amount,
+            reference_number: 'MANUAL-' + Math.floor(100000 + Math.random() * 900000),
+            proof_storage_path: 'reference-only',
+            status: 'verified',
+            verified_at: new Date().toISOString(),
+          })
+        if (payErr) throw payErr
+      }
 
       // 2. Update Booking status to CONFIRMED
       const { error: bookErr } = await supabase
@@ -210,13 +225,13 @@ export default function BookingsManager() {
         .eq('id', selectedBooking.id)
       if (bookErr) throw bookErr
 
-      showSuccess('Confirmed!', 'Payment confirmed and booking verified!')
+      showSuccess('Confirmed!', 'Booking confirmed successfully!')
 
       // Refresh views
       await fetchBookings()
       setSelectedBooking(null)
     } catch (err) {
-      showError('Error', 'Failed to confirm payment.')
+      showError('Error', 'Failed to confirm booking.')
     }
   }
 
@@ -848,12 +863,20 @@ export default function BookingsManager() {
 
               {/* PENDING PAYMENT ACTIONS */}
               {selectedBooking.status === 'PENDING_PAYMENT' && (
-                <button
-                  onClick={handleAdminCancelBooking}
-                  className="rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-650 dark:text-zinc-400 hover:bg-zinc-150 dark:hover:bg-zinc-800 transition"
-                >
-                  Cancel Booking
-                </button>
+                <>
+                  <button
+                    onClick={handleAdminCancelBooking}
+                    className="rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-900 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-650 dark:text-zinc-400 hover:bg-zinc-150 dark:hover:bg-zinc-800 transition"
+                  >
+                    Cancel Booking
+                  </button>
+                  <button
+                    onClick={handleConfirmPayment}
+                    className="rounded-lg bg-green-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-green-500 transition"
+                  >
+                    Confirm Booking
+                  </button>
+                </>
               )}
 
               {/* PAYMENT VERIFICATION BUTTONS */}
