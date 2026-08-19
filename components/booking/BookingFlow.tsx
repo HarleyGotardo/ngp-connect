@@ -12,6 +12,7 @@ interface Service {
   description: string
   duration_minutes: number
   price: number
+  original_price?: number
 }
 
 interface Court {
@@ -1108,9 +1109,16 @@ export default function BookingFlow({
                     <p className="mt-2 text-xs text-zinc-555 dark:text-zinc-400 leading-relaxed">{service.description}</p>
                   </div>
                   <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-900 flex justify-between items-baseline">
-                    <span className="text-lg font-black text-orange-500">
-                      ₱{Number(service.price).toLocaleString()}
-                    </span>
+                    <div className="flex items-baseline gap-1.5">
+                      {service.original_price && (
+                        <span className="text-xs text-zinc-400 dark:text-zinc-500 line-through font-semibold">
+                          ₱{Number(service.original_price).toLocaleString()}
+                        </span>
+                      )}
+                      <span className="text-lg font-black text-orange-500">
+                        ₱{Number(service.price).toLocaleString()}
+                      </span>
+                    </div>
                     <span className="text-xs text-zinc-500 dark:text-zinc-400">{service.duration_minutes} Mins</span>
                   </div>
                 </div>
@@ -1363,8 +1371,23 @@ export default function BookingFlow({
                       <div className="text-center">Available Coach Slots</div>
                     ) : (
                       courts.map((court) => (
-                        <div key={court.id} className="text-center truncate">
-                          🏀 {court.name}
+                        <div key={court.id} className="text-center truncate flex items-center justify-center gap-1.5 pl-2">
+                          <span>🏀 {court.name}</span>
+                          <span
+                            role="button"
+                            onClick={() => {
+                              setMapModalCourt({
+                                name: court.name,
+                                location: court.location || '',
+                                latitude: court.latitude || 10.3157,
+                                longitude: court.longitude || 123.8854,
+                              })
+                            }}
+                            className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
+                            title="View Venue Map"
+                          >
+                            🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
+                          </span>
                         </div>
                       ))
                     )}
@@ -1461,25 +1484,6 @@ export default function BookingFlow({
                                             <div className="text-[10px] font-semibold mt-0.5 opacity-90">
                                               ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
                                             </div>
-                                            
-                                            {/* Map Viewer trigger link */}
-                                            {slot.courtName && (
-                                              <span
-                                                role="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation()
-                                                  setMapModalCourt({
-                                                    name: slot.courtName!,
-                                                    location: slot.courtLocation || '',
-                                                    latitude: slot.latitude || 10.3157,
-                                                    longitude: slot.longitude || 123.8854,
-                                                  })
-                                                }}
-                                                className="text-[9px] text-orange-500 hover:underline block mx-auto mt-1 font-bold cursor-pointer"
-                                              >
-                                                🗺️ Map
-                                              </span>
-                                            )}
                                           </button>
                                         )
                                       })

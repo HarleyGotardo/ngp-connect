@@ -23,6 +23,7 @@ const FALLBACK_SERVICES = [
     description: 'Personalized individual coaching. Focuses on game translation skills (speed, deceleration, direction change). 1hr per session. Requires a minimum bundle of 5 sessions (₱5,000 total). plus court fee.',
     duration_minutes: 60,
     price: 5000.00,
+    original_price: null as number | null,
   },
   {
     id: '33333333-3333-3333-3333-333333333332',
@@ -30,6 +31,7 @@ const FALLBACK_SERVICES = [
     description: 'Training block optimized for exactly 5 players of the same positions. Focuses on structural space reads, defensive rotations, and live game conditioning. Price to be finalized.',
     duration_minutes: 90,
     price: 0.00,
+    original_price: null as number | null,
   },
   {
     id: '33333333-3333-3333-3333-333333333333',
@@ -37,6 +39,7 @@ const FALLBACK_SERVICES = [
     description: 'Intense group performance camp targeting deceleration, footwork, speed, and in-game transitions. Open for minimum 20 athletes, maximum 40 athletes. Pricing to be finalized.',
     duration_minutes: 120,
     price: 0.00,
+    original_price: null as number | null,
   }
 ]
 
@@ -233,11 +236,16 @@ export default async function Home() {
                   {/* Card Header */}
                   <div className="p-8 border-b border-zinc-200 dark:border-zinc-900 bg-zinc-50 dark:bg-zinc-900/20">
                     <h3 className="text-lg font-bold text-zinc-900 dark:text-white min-h-[50px]">{service.name}</h3>
-                    <div className="mt-4 flex items-baseline">
+                    <div className="mt-4 flex items-baseline flex-wrap gap-1.5">
+                      {service.original_price && (
+                        <span className="text-sm text-zinc-400 dark:text-zinc-500 line-through font-semibold self-center">
+                          ₱{Number(service.original_price).toLocaleString()}
+                        </span>
+                      )}
                       <span className="text-3xl font-extrabold text-orange-500">
                         ₱{Number(service.price).toLocaleString()}
                       </span>
-                      <span className="ml-1.5 text-xs text-zinc-500 dark:text-zinc-400">
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 self-center font-medium">
                         / {service.duration_minutes} mins
                       </span>
                     </div>

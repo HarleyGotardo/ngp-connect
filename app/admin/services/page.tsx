@@ -9,6 +9,7 @@ interface Service {
   name: string
   duration_minutes: number
   price: number
+  original_price?: number
   description?: string
   is_active: boolean
 }
@@ -26,6 +27,7 @@ export default function ServicesManager() {
   const [name, setName] = useState('')
   const [durationMinutes, setDurationMinutes] = useState<number | ''>('')
   const [price, setPrice] = useState<number | ''>('')
+  const [originalPrice, setOriginalPrice] = useState<number | ''>('')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
@@ -55,6 +57,7 @@ export default function ServicesManager() {
     setName('')
     setDurationMinutes('')
     setPrice('')
+    setOriginalPrice('')
     setDescription('')
     setIsActive(true)
     setShowFormModal(true)
@@ -65,6 +68,7 @@ export default function ServicesManager() {
     setName(service.name)
     setDurationMinutes(service.duration_minutes)
     setPrice(service.price)
+    setOriginalPrice(service.original_price ?? '')
     setDescription(service.description || '')
     setIsActive(service.is_active)
     setShowFormModal(true)
@@ -78,6 +82,7 @@ export default function ServicesManager() {
       name,
       duration_minutes: Number(durationMinutes),
       price: Number(price),
+      original_price: originalPrice !== '' ? Number(originalPrice) : null,
       description: description || null,
       is_active: isActive,
     }
@@ -180,9 +185,14 @@ export default function ServicesManager() {
                   <span className="text-zinc-500">Duration:</span>
                   <span className="font-bold text-zinc-900 dark:text-white ml-1">{service.duration_minutes} Mins</span>
                 </div>
-                <div className="border-l border-zinc-200 dark:border-zinc-900 pl-4">
-                  <span className="text-zinc-500">Session Price:</span>
-                  <span className="font-extrabold text-orange-500 ml-1">₱{Number(service.price).toLocaleString()}</span>
+                <div className="border-l border-zinc-200 dark:border-zinc-900 pl-4 flex items-center">
+                  <span className="text-zinc-500">Price:</span>
+                  {service.original_price && (
+                    <span className="text-zinc-400 line-through ml-1.5 font-medium">
+                      ₱{Number(service.original_price).toLocaleString()}
+                    </span>
+                  )}
+                  <span className="font-extrabold text-orange-500 ml-1.5">₱{Number(service.price).toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -228,9 +238,9 @@ export default function ServicesManager() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Duration (Minutes)</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-650 dark:text-zinc-400">Duration (m)</label>
                   <input
                     type="number"
                     required
@@ -242,7 +252,18 @@ export default function ServicesManager() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">Price (₱)</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-650 dark:text-zinc-400">Regular (₱)</label>
+                  <input
+                    type="number"
+                    value={originalPrice}
+                    onChange={(e) => setOriginalPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="Optional"
+                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-650 dark:text-zinc-400">Sale (₱) <span className="text-red-500">*</span></label>
                   <input
                     type="number"
                     required
