@@ -188,6 +188,28 @@ export default function BookingFlow({
     return 'session'
   })
 
+  // Date selection states for client timetable
+  const isSameDay = (d1: Date, d2: Date) => {
+    return (
+      d1.getFullYear() === d2.getFullYear() &&
+      d1.getMonth() === d2.getMonth() &&
+      d1.getDate() === d2.getDate()
+    )
+  }
+
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date())
+  const [dateStripStart, setDateStripStart] = useState<Date>(new Date())
+
+  const quickDays = useMemo(() => {
+    const list = []
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(dateStripStart)
+      d.setDate(dateStripStart.getDate() + i)
+      list.push(d)
+    }
+    return list
+  }, [dateStripStart])
+
   // Package State
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null)
   const [purchaseSuccess, setPurchaseSuccess] = useState(false)
@@ -607,6 +629,33 @@ export default function BookingFlow({
       timeZone: 'Asia/Manila',
     })
 
+  const datesWithSlots = useMemo(() => {
+    const set = new Set<string>()
+    slotsByMode[activeMode].forEach((s) => {
+      const d = new Date(s.start_at)
+      set.add(d.toDateString())
+    })
+    return set
+  }, [slotsByMode, activeMode])
+
+  const slotsOnDate = useMemo(() => {
+    return slotsByMode[activeMode].filter((s) => {
+      const d = new Date(s.start_at)
+      return isSameDay(d, selectedDate)
+    })
+  }, [slotsByMode, activeMode, selectedDate])
+  const availableDatesForMode = useMemo(() => {
+    const dates: string[] = []
+    const seen = new Set<string>()
+    slotsByMode[activeMode].forEach((s) => {
+      const dStr = new Date(s.start_at).toDateString()
+      if (!seen.has(dStr)) {
+        seen.add(dStr)
+        dates.push(s.start_at)
+      }
+    })
+    return dates.sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+  }, [slotsByMode, activeMode])
   // --------------------------------------------------------------------------
   // RENDER
   // --------------------------------------------------------------------------
@@ -1102,6 +1151,12 @@ export default function BookingFlow({
                     onClick={() => {
                       setActiveMode(mode)
                       setSelectedSlot(null)
+                      const firstSlot = slotsByMode[mode]?.[0]
+                      if (firstSlot) {
+                        const slotDate = new Date(firstSlot.start_at)
+                        setSelectedDate(slotDate)
+                        setDateStripStart(slotDate)
+                      }
                     }}
                     className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all ${
                       isActive
@@ -1144,90 +1199,303 @@ export default function BookingFlow({
               )}
             </div>
 
-            {/* Slot grid */}
+            {/* Scrollable Horizontal Date Strip */}
+            {slotsByMode[activeMode].length > 0 && (
+              <div className="mb-6">
+                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-550 dark:text-zinc-400 mb-2">
+                  Choose Booking Date
+                </label>
+                <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+                  {/* Calendar Input Picker (Full Calendar View) */}
+                  <div className="relative shrink-0 min-w-[200px]">
+                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 text-sm">
+                      📅
+                    </div>
+                    <input
+                      type="date"
+                      value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`}
+                      min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          const parts = e.target.value.split('-')
+                          const newD = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                          setSelectedDate(newD)
+                          setSelectedSlot(null)
+                          setDateStripStart(newD)
+                        }
+                      }}
+                      className="w-full rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 pl-9 pr-4 py-2.5 text-xs font-bold uppercase tracking-wider outline-none focus:border-orange-500 transition cursor-pointer text-zinc-800 dark:text-zinc-200"
+                    />
+                  </div>
+
+                  {/* Scrollable Quick Selection Strip Flanked by Pagination Arrows */}
+                  <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                    <button
+                      type="button"
+                      disabled={isSameDay(dateStripStart, new Date()) || dateStripStart < new Date()}
+                      onClick={() => {
+                        const today = new Date()
+                        today.setHours(0, 0, 0, 0)
+                        const prev = new Date(dateStripStart)
+                        prev.setDate(prev.getDate() - 7)
+                        setDateStripStart(prev < today ? today : prev)
+                      }}
+                      className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-500 font-bold hover:border-orange-500/40 disabled:opacity-30 disabled:hover:border-zinc-200 transition shrink-0"
+                      title="Previous Week"
+                    >
+                      ←
+                    </button>
+
+                    <div className="flex-1 overflow-x-auto scrollbar-none pb-0.5">
+                      <div className="flex gap-1.5 whitespace-nowrap">
+                        {quickDays.map((d, idx) => {
+                          const isSelected = isSameDay(d, selectedDate)
+                          const hasSlots = datesWithSlots.has(d.toDateString())
+                          const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+                          const dayNum = d.getDate()
+
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setSelectedDate(d)
+                                setSelectedSlot(null)
+                              }}
+                              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border-2 text-[11px] font-bold uppercase tracking-wider transition ${
+                                isSelected
+                                  ? 'border-orange-500 bg-orange-500/10 text-orange-500'
+                                  : 'border-zinc-250 dark:border-zinc-905 bg-white dark:bg-zinc-955 text-zinc-550 dark:text-zinc-400 hover:border-zinc-305 dark:hover:border-zinc-800'
+                              }`}
+                            >
+                              <span>{dayName} {dayNum}</span>
+                              {hasSlots && (
+                                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = new Date(dateStripStart)
+                        next.setDate(next.getDate() + 7)
+                        setDateStripStart(next)
+                      }}
+                      className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-550 font-bold hover:border-orange-500/40 transition shrink-0"
+                      title="Next Week"
+                    >
+                      →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Timetable Grid or Empty State */}
             {slotsByMode[activeMode].length === 0 ? (
               <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/40">
                 <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available</h3>
-                <p className="mt-1 text-xs text-zinc-450 dark:text-zinc-500 max-w-xs mx-auto">
+                <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto">
                   No {MODE_META[activeMode].badgeLabel.toLowerCase()} slots are scheduled for this program duration. Try a different mode or check back later.
                 </p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-1 scrollbar-thin">
-                {slotsByMode[activeMode].map((slot, idx) => {
-                  const meta = MODE_META[slot.mode]
-                  const isSelected =
-                    selectedSlot?.start_at === slot.start_at &&
-                    selectedSlot?.coach_availability_id === slot.coach_availability_id &&
-                    selectedSlot?.court_availability_id === slot.court_availability_id
-
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => setSelectedSlot(slot)}
-                      className={`cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 ${
-                        isSelected
-                          ? `${meta.border} ${meta.bg} ring-1 ${meta.border}`
-                          : `border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 ${meta.hoverBg} hover:border-zinc-300 dark:hover:border-zinc-700`
-                      }`}
-                    >
-                      <div className="flex justify-between items-start gap-3">
-                        {/* Left: date/time/court */}
-                        <div className="space-y-1 min-w-0">
-                          <div className="text-xs font-bold text-zinc-800 dark:text-zinc-300">
-                            {formatSlotDate(slot.start_at)}
-                          </div>
-                          <div className={`text-xs font-bold uppercase tracking-wider ${meta.color}`}>
-                            {formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}
-                          </div>
-                          {slot.mode !== 'coach_only' && slot.courtName && (
-                            <div className="text-[11px] text-zinc-500 truncate flex items-center gap-1.5 mt-0.5">
-                              <span>🏀 {slot.courtName}</span>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  setMapModalCourt({
-                                    name: slot.courtName!,
-                                    location: slot.courtLocation || '',
-                                    latitude: slot.latitude || 10.3157,
-                                    longitude: slot.longitude || 123.8854,
-                                  })
-                                }}
-                                className="text-orange-500 hover:text-orange-400 font-bold hover:underline"
-                              >
-                                (View Map)
-                              </button>
-                            </div>
-                          )}
-                          {slot.mode === 'coach_only' && (
-                            <div className="text-[11px] text-zinc-500">
-                              🏋️ Coach JP · No court included
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Right: fee badge */}
-                        <div className="text-right shrink-0">
-                          <span className="text-[9px] text-zinc-500 block uppercase font-bold tracking-wider">
-                            {slot.mode === 'combined' ? 'Total Fee' : slot.mode === 'coach_only' ? 'Training Fee' : 'Court Fee'}
-                          </span>
-                          <div className={`text-sm font-black mt-0.5 ${meta.color}`}>
-                            ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
-                          </div>
-                          {slot.mode === 'combined' && (
-                            <div className="text-[9px] text-zinc-600 mt-0.5">
-                              ₱{slot.trainingFee} + ₱{slot.courtFee}
-                            </div>
-                          )}
-                        </div>
-                      </div>
+            ) : slotsOnDate.length === 0 ? (
+              <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-805 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/20 px-4">
+                <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available for this Date</h3>
+                <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto mb-4">
+                  There are no scheduled training sessions on this day. Please select a date highlighted with an orange dot indicator.
+                </p>
+                {availableDatesForMode.length > 0 && (
+                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-900 max-w-md mx-auto">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">
+                      📅 Available dates for {MODE_META[activeMode].badgeLabel}:
+                    </p>
+                    <div className="flex flex-wrap gap-1.5 justify-center">
+                      {availableDatesForMode.map((isoDate) => {
+                        const d = new Date(isoDate)
+                        const formatted = d.toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          weekday: 'short',
+                          timeZone: 'Asia/Manila',
+                        })
+                        return (
+                          <button
+                            key={isoDate}
+                            type="button"
+                            onClick={() => {
+                              setSelectedDate(d)
+                              setSelectedSlot(null)
+                              setDateStripStart(d)
+                            }}
+                            className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-zinc-250 bg-white hover:border-orange-500 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 hover:bg-orange-500 hover:text-black transition"
+                          >
+                            {formatted}
+                          </button>
+                        )
+                      })}
                     </div>
-                  )
-                })}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl bg-zinc-50/30 dark:bg-zinc-955/10 max-h-[460px] scrollbar-thin">
+                <div className="min-w-[680px] p-4">
+                  {/* Table headers (Courts columns / Coach columns) */}
+                  <div
+                    className="grid gap-2 border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-2 text-center text-xs font-bold uppercase tracking-wider text-zinc-500"
+                    style={{
+                      gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                    }}
+                  >
+                    <div className="text-left pl-2">Time</div>
+                    {activeMode === 'coach_only' ? (
+                      <div className="text-center">Available Coach Slots</div>
+                    ) : (
+                      courts.map((court) => (
+                        <div key={court.id} className="text-center truncate">
+                          🏀 {court.name}
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Table hours rows */}
+                  <div className="space-y-1.5">
+                    {(() => {
+                      const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                      return HOURS.map((hour) => {
+                        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+                        const ampm = hour >= 12 ? 'PM' : 'AM'
+                        const timeLabel = `${displayHour}:00 ${ampm}`
+
+                        return (
+                          <div
+                            key={hour}
+                            className="grid gap-2 items-center text-center py-1 border-b border-zinc-100/50 dark:border-zinc-900/30 last:border-b-0"
+                            style={{
+                              gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                            }}
+                          >
+                            {/* Hour label */}
+                            <div className="text-left text-[11px] font-bold text-zinc-400 dark:text-zinc-500 pl-2">
+                              {timeLabel}
+                            </div>
+
+                            {/* Slot cell containers */}
+                            {activeMode === 'coach_only' ? (
+                              (() => {
+                                const cellSlots = slotsOnDate.filter((s) => new Date(s.start_at).getHours() === hour)
+                                return (
+                                  <div className="flex flex-col gap-1.5 justify-center items-center min-h-[48px]">
+                                    {cellSlots.length > 0 ? (
+                                      cellSlots.map((slot, sIdx) => {
+                                        const isSelected =
+                                          selectedSlot?.start_at === slot.start_at &&
+                                          selectedSlot?.coach_availability_id === slot.coach_availability_id
+                                        
+                                        return (
+                                          <button
+                                            key={sIdx}
+                                            type="button"
+                                            onClick={() => setSelectedSlot(slot)}
+                                            className={`w-full max-w-sm rounded-xl border-2 p-2.5 text-xs transition duration-200 ${
+                                              isSelected
+                                                ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold shadow-md shadow-orange-500/5'
+                                                : 'border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
+                                            }`}
+                                          >
+                                            <div className="font-extrabold">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                            <div className="text-[10px] text-zinc-500 dark:text-zinc-500 font-semibold mt-0.5">
+                                              ₱{Number(slot.trainingFee).toLocaleString()}
+                                            </div>
+                                          </button>
+                                        )
+                                      })
+                                    ) : (
+                                      <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                    )}
+                                  </div>
+                                )
+                              })()
+                            ) : (
+                              courts.map((court) => {
+                                const cellSlots = slotsOnDate.filter((s) => {
+                                  const d = new Date(s.start_at)
+                                  return d.getHours() === hour && s.court_id === court.id
+                                })
+
+                                return (
+                                  <div key={court.id} className="flex flex-col gap-1.5 justify-center items-center min-h-[48px] border-l border-zinc-200/40 dark:border-zinc-900/20 first:border-l-0">
+                                    {cellSlots.length > 0 ? (
+                                      cellSlots.map((slot, sIdx) => {
+                                        const isSelected =
+                                          selectedSlot?.start_at === slot.start_at &&
+                                          selectedSlot?.coach_availability_id === slot.coach_availability_id &&
+                                          selectedSlot?.court_availability_id === slot.court_availability_id
+                                        
+                                        const meta = MODE_META[slot.mode]
+                                        
+                                        return (
+                                          <button
+                                            key={sIdx}
+                                            type="button"
+                                            onClick={() => setSelectedSlot(slot)}
+                                            className={`w-full max-w-[180px] rounded-xl border-2 p-2 text-xs transition duration-200 ${
+                                              isSelected
+                                                ? `${meta.border} ${meta.bg} ${meta.color} font-bold shadow-md`
+                                                : `border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30`
+                                            }`}
+                                          >
+                                            <div className="font-extrabold leading-tight">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                            <div className="text-[10px] font-semibold mt-0.5 opacity-90">
+                                              ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
+                                            </div>
+                                            
+                                            {/* Map Viewer trigger link */}
+                                            {slot.courtName && (
+                                              <span
+                                                role="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation()
+                                                  setMapModalCourt({
+                                                    name: slot.courtName!,
+                                                    location: slot.courtLocation || '',
+                                                    latitude: slot.latitude || 10.3157,
+                                                    longitude: slot.longitude || 123.8854,
+                                                  })
+                                                }}
+                                                className="text-[9px] text-orange-500 hover:underline block mx-auto mt-1 font-bold cursor-pointer"
+                                              >
+                                                🗺️ Map
+                                              </span>
+                                            )}
+                                          </button>
+                                        )
+                                      })
+                                    ) : (
+                                      <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                    )}
+                                  </div>
+                                )
+                              })
+                            )}
+                          </div>
+                        )
+                      })
+                    })()}
+                  </div>
+                </div>
               </div>
             )}
 
