@@ -28,6 +28,18 @@ interface CourtAvailability {
   courts?: Court
 }
 
+interface Booking {
+  id: string
+  start_at: string
+  end_at: string
+  coach_id?: string | null
+  court_id?: string | null
+  status: string
+  clients?: { full_name: string }
+  services?: { name: string }
+  courts?: { name: string; location?: string }
+}
+
 // Calendar Settings
 const START_HOUR = 8 // 8:00 AM
 const END_HOUR = 22 // 10:00 PM
@@ -40,6 +52,7 @@ export default function AvailabilityManager() {
   // DATA STATE
   const [coachAvails, setCoachAvails] = useState<CoachAvailability[]>([])
   const [courtAvails, setCourtAvails] = useState<CourtAvailability[]>([])
+  const [bookings, setBookings] = useState<Booking[]>([])
   const [courts, setCourts] = useState<Court[]>([])
   const [coachId, setCoachId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,13 +65,15 @@ export default function AvailabilityManager() {
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedEvent, setSelectedEvent] = useState<{
     id: string
-    type: 'coach' | 'court'
+    type: 'coach' | 'court' | 'booking'
     title: string
     start: string
     end: string
     courtName?: string
     location?: string
     status: string
+    clientName?: string
+    serviceName?: string
   } | null>(null)
 
   // ADD FORM STATES
@@ -105,6 +120,13 @@ export default function AvailabilityManager() {
         .eq('is_active', true)
       setCourts((cts || []) as Court[])
       if (cts && cts.length > 0) setFormCourtId(cts[0].id)
+
+      // Fetch active bookings for overlay display
+      const { data: bList } = await supabase
+        .from('bookings')
+        .select('*, clients(full_name), services(name), courts(name, location)')
+        .neq('status', 'CANCELLED')
+      setBookings((bList || []) as Booking[])
     } catch (err) {
       console.error('Failed to load availability schedules:', err)
     } finally {
@@ -205,18 +227,8 @@ export default function AvailabilityManager() {
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Disallow multi-hour dragging; always lock slots to exactly 1 hour.
     if (!isSelecting || !selectionDay) return
-
-    const rect = e.currentTarget.getBoundingClientRect()
-    const currentY = e.clientY - rect.top
-    const minutes = Math.floor(currentY)
-    const roundedCurrent = Math.round(minutes / 30) * 30
-
-    const start = Math.min(selectionAnchor, roundedCurrent)
-    const end = Math.max(selectionAnchor + 30, roundedCurrent)
-
-    setSelectStartMin(Math.max(0, start))
-    setSelectEndMin(Math.min(TOTAL_HEIGHT, end))
   }
 
   const handleMouseUp = () => {
@@ -704,6 +716,7 @@ export default function AvailabilityManager() {
               // Filters coach/court events on this day
               const coachEventsThisDay = coachAvails.filter(s => isSameDay(new Date(s.start_at), day))
               const courtEventsThisDay = courtAvails.filter(s => isSameDay(new Date(s.start_at), day))
+              const bookingsThisDay = bookings.filter(b => isSameDay(new Date(b.start_at), day))
               const isHighlighterVisible = (isSelecting || showAddModal) && selectionDay && isSameDay(selectionDay, day)
 
               return (
@@ -774,7 +787,11 @@ export default function AvailabilityManager() {
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-md shadow-emerald-500/5 hover:-translate-y-[1px]"
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-md hover:-translate-y-[1px] ${
+                              coach.status === 'booked'
+                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                                : 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 shadow-emerald-500/5'
+                            }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-emerald-400 flex items-center gap-1">
@@ -812,7 +829,11 @@ export default function AvailabilityManager() {
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-orange-500/5 hover:-translate-y-[1px]"
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${
+                              coach.status === 'booked'
+                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                                : 'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 shadow-orange-500/5'
+                            }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-orange-500">Coach Block</div>
@@ -849,7 +870,11 @@ export default function AvailabilityManager() {
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className="event-card absolute w-[90%] left-0 z-10 rounded-lg border border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:shadow-blue-500/5 hover:-translate-y-[1px]"
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${
+                              s.status === 'booked'
+                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                                : 'border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 shadow-blue-500/5'
+                            }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-blue-500">Court Reserved</div>
@@ -859,6 +884,56 @@ export default function AvailabilityManager() {
                           </div>
                         )
                       })
+
+                    // 3. Render active bookings as overlay cards
+                    bookingsThisDay.forEach((booking) => {
+                      const pos = getEventPosition(booking.start_at, booking.end_at)
+                      const dStart = new Date(booking.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                      const dEnd   = new Date(booking.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+
+                      rendered.push(
+                        <div
+                          key={`booking-${booking.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleOpenDetail({
+                              id: booking.id,
+                              type: 'booking',
+                              title: `Booking: ${booking.clients?.full_name || 'Client'}`,
+                              start: booking.start_at,
+                              end: booking.end_at,
+                              status: booking.status,
+                              clientName: booking.clients?.full_name,
+                              serviceName: booking.services?.name,
+                              courtName: booking.courts?.name,
+                              location: booking.courts?.location || '',
+                            })
+                          }}
+                          style={{
+                            top: `${pos.top}px`,
+                            height: `${pos.height}px`,
+                            width: '92%',
+                            left: '4%',
+                          }}
+                          className="event-card absolute z-20 rounded-lg border border-red-500 bg-red-500/90 text-white p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-lg hover:-translate-y-[1px]"
+                        >
+                          <div>
+                            <div className="font-extrabold tracking-wide uppercase text-[7px] text-red-100 flex items-center gap-1">
+                              🔒 Booked
+                            </div>
+                            <div className="font-bold mt-0.5 leading-tight truncate">
+                              {booking.clients?.full_name || 'Client'}
+                            </div>
+                            <div className="text-[8px] text-red-100 opacity-90 truncate leading-none mt-0.5">
+                              {booking.services?.name || 'Training'}
+                            </div>
+                          </div>
+                          <div className="font-bold mt-1 text-[8px] opacity-95 leading-none">
+                            {dStart} - {dEnd}
+                          </div>
+                        </div>
+                      )
+                    })
 
                     return rendered
                   })()}
@@ -1014,18 +1089,26 @@ export default function AvailabilityManager() {
                     type="time"
                     required
                     value={formStartTime}
-                    onChange={(e) => setFormStartTime(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setFormStartTime(val)
+                      if (val) {
+                        const [h, m] = val.split(':').map(Number)
+                        const endH = (h + 1) % 24
+                        setFormEndTime(`${String(endH).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+                      }
+                    }}
+                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-655 dark:text-zinc-400">End Time</label>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-655 dark:text-zinc-400">End Time (Fixed 1h)</label>
                   <input
                     type="time"
                     required
                     value={formEndTime}
-                    onChange={(e) => setFormEndTime(e.target.value)}
-                    className="mt-1.5 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-3 py-2.5 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500"
+                    disabled
+                    className="mt-1.5 w-full rounded-lg border border-zinc-250 bg-zinc-100 dark:border-zinc-900 dark:bg-zinc-950/40 px-3 py-2.5 text-sm text-zinc-500 dark:text-zinc-500 outline-none cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -1063,22 +1146,47 @@ export default function AvailabilityManager() {
             <div className="flex justify-between items-start border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-4">
               <div>
                 <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded ${
-                  selectedEvent.type === 'coach' ? 'bg-orange-500/10 text-orange-400' : 'bg-blue-500/10 text-blue-400'
+                  selectedEvent.type === 'booking'
+                    ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                    : selectedEvent.type === 'coach'
+                    ? 'bg-orange-500/10 text-orange-400'
+                    : 'bg-blue-500/10 text-blue-400'
                 }`}>
-                  {selectedEvent.type === 'coach' ? 'Coach Availability' : 'Court Rental Open'}
+                  {selectedEvent.type === 'booking' ? 'Active Booking' : selectedEvent.type === 'coach' ? 'Coach Availability' : 'Court Rental Open'}
                 </span>
-                <h3 className="text-base font-bold text-zinc-950 dark:text-white mt-2">{selectedEvent.title}</h3>
+                <h3 className="text-base font-bold text-zinc-955 dark:text-white mt-2 leading-snug">{selectedEvent.title}</h3>
               </div>
               <button
                 onClick={() => setShowDetailModal(false)}
-                className="h-7 w-7 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-950 dark:border-zinc-800 text-xs flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white"
+                className="h-7 w-7 rounded-lg bg-zinc-100 border border-zinc-200 dark:bg-zinc-955 dark:border-zinc-800 text-xs flex items-center justify-center hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-900 dark:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="space-y-4 text-xs sm:text-sm text-zinc-700 dark:text-zinc-300">
-              {selectedEvent.location && (
+            <div className="space-y-4 text-xs sm:text-sm text-zinc-750 dark:text-zinc-300">
+              {selectedEvent.type === 'booking' && (
+                <>
+                  <div>
+                    <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Client Name</span>
+                    <span className="font-extrabold text-zinc-950 dark:text-white text-base mt-0.5 block">{selectedEvent.clientName}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Training Program</span>
+                    <span className="font-bold text-orange-500 mt-0.5 block">{selectedEvent.serviceName}</span>
+                  </div>
+                  {selectedEvent.courtName && (
+                    <div>
+                      <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Reserved Venue</span>
+                      <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 flex items-center gap-1">
+                        🏀 {selectedEvent.courtName}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {selectedEvent.type !== 'booking' && selectedEvent.location && (
                 <div>
                   <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Location</span>
                   <span className="font-semibold text-zinc-900 dark:text-white mt-0.5 flex items-center gap-1">
@@ -1102,7 +1210,11 @@ export default function AvailabilityManager() {
               <div>
                 <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Status</span>
                 <span className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase ${
-                  selectedEvent.status === 'available' ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-700'
+                  selectedEvent.status === 'available'
+                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                    : selectedEvent.status === 'booked' || selectedEvent.type === 'booking'
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    : 'bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-700'
                 }`}>
                   {selectedEvent.status}
                 </span>
@@ -1117,7 +1229,7 @@ export default function AvailabilityManager() {
               >
                 Close
               </button>
-              {selectedEvent.status === 'available' && (
+              {selectedEvent.type !== 'booking' && selectedEvent.status === 'available' && (
                 <button
                   type="button"
                   onClick={handleDeleteEvent}

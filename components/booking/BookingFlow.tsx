@@ -79,6 +79,7 @@ interface BookingFlowProps {
   packages: Package[]
   coachAvails: CoachAvailability[]
   courtAvails: CourtAvailability[]
+  bookings: any[]
 }
 
 // --------------------------------------------------------------------------
@@ -148,6 +149,7 @@ export default function BookingFlow({
   packages,
   coachAvails,
   courtAvails,
+  bookings,
 }: BookingFlowProps) {
   const router = useRouter()
   const supabase = createClient()
@@ -358,49 +360,39 @@ export default function BookingFlow({
           const court = courtBlock.courts!
           const overlapStart = Math.max(cs, new Date(courtBlock.start_at).getTime())
           const overlapEnd = Math.min(ce, new Date(courtBlock.end_at).getTime())
-          let slotStart = overlapStart
-          while (slotStart + duration * 60_000 <= overlapEnd) {
-            const slotEnd = slotStart + duration * 60_000
-            combined.push({
-              mode: 'combined',
-              start_at: new Date(slotStart).toISOString(),
-              end_at: new Date(slotEnd).toISOString(),
-              coach_availability_id: coachBlock.id,
-              court_availability_id: courtBlock.id,
-              court_id: court.id,
-              coach_id: coachBlock.coach_id,
-              courtName: court.name,
-              courtLocation: court.location,
-              courtFee: Number(court.rental_price),
-              trainingFee: Number(selectedService.price),
-              coachName: coachBlock.profiles?.full_name || settings.coach_name,
-              latitude: court.latitude,
-              longitude: court.longitude,
-            })
-            slotStart = slotEnd
-          }
+          combined.push({
+            mode: 'combined',
+            start_at: new Date(overlapStart).toISOString(),
+            end_at: new Date(overlapEnd).toISOString(),
+            coach_availability_id: coachBlock.id,
+            court_availability_id: courtBlock.id,
+            court_id: court.id,
+            coach_id: coachBlock.coach_id,
+            courtName: court.name,
+            courtLocation: court.location,
+            courtFee: Number(court.rental_price),
+            trainingFee: Number(selectedService.price),
+            coachName: coachBlock.profiles?.full_name || settings.coach_name,
+            latitude: court.latitude,
+            longitude: court.longitude,
+          })
         }
       } else {
         // Coach-only slots — no matching court in this window
-        let slotStart = cs
-        while (slotStart + duration * 60_000 <= ce) {
-          const slotEnd = slotStart + duration * 60_000
-          coachOnly.push({
-            mode: 'coach_only',
-            start_at: new Date(slotStart).toISOString(),
-            end_at: new Date(slotEnd).toISOString(),
-            coach_availability_id: coachBlock.id,
-            court_availability_id: null,
-            court_id: null,
-            coach_id: coachBlock.coach_id,
-            courtName: null,
-            courtLocation: null,
-            courtFee: 0,
-            trainingFee: Number(selectedService.price),
-            coachName: coachBlock.profiles?.full_name || settings.coach_name,
-          })
-          slotStart = slotEnd
-        }
+        coachOnly.push({
+          mode: 'coach_only',
+          start_at: new Date(cs).toISOString(),
+          end_at: new Date(ce).toISOString(),
+          coach_availability_id: coachBlock.id,
+          court_availability_id: null,
+          court_id: null,
+          coach_id: coachBlock.coach_id,
+          courtName: null,
+          courtLocation: null,
+          courtFee: 0,
+          trainingFee: Number(selectedService.price),
+          coachName: coachBlock.profiles?.full_name || settings.coach_name,
+        })
       }
     }
 
@@ -422,38 +414,52 @@ export default function BookingFlow({
       })
       if (hasCoachOverlap) continue
 
-      let slotStart = bcs
-      while (slotStart + duration * 60_000 <= bce) {
-        const slotEnd = slotStart + duration * 60_000
-        courtOnly.push({
-          mode: 'court_only',
-          start_at: new Date(slotStart).toISOString(),
-          end_at: new Date(slotEnd).toISOString(),
-          coach_availability_id: null,
-          court_availability_id: courtBlock.id,
-          court_id: court.id,
-          coach_id: null,
-          courtName: court.name,
-          courtLocation: court.location,
-          courtFee: Number(court.rental_price),
-          trainingFee: 0,
-          coachName: null,
-          latitude: court.latitude,
-          longitude: court.longitude,
+      courtOnly.push({
+        mode: 'court_only',
+        start_at: new Date(bcs).toISOString(),
+        end_at: new Date(bce).toISOString(),
+        coach_availability_id: null,
+        court_availability_id: courtBlock.id,
+        court_id: court.id,
+        coach_id: null,
+        courtName: court.name,
+        courtLocation: court.location,
+        courtFee: Number(court.rental_price),
+        trainingFee: 0,
+        coachName: null,
+        latitude: court.latitude,
+        longitude: court.longitude,
+      })
+    }
+
+    const filterOverlapping = (slotsList: BookableSlot[]) => {
+      return slotsList.filter((slot) => {
+        const slotStart = new Date(slot.start_at).getTime()
+        const slotEnd = new Date(slot.end_at).getTime()
+
+        const isOverlapping = bookings.some((b) => {
+          const bs = new Date(b.start_at).getTime()
+          const be = new Date(b.end_at).getTime()
+
+          const coachMatch = slot.coach_id && b.coach_id === slot.coach_id
+          const courtMatch = slot.court_id && b.court_id === slot.court_id
+
+          return (coachMatch || courtMatch) && (bs < slotEnd && be > slotStart)
         })
-        slotStart = slotEnd
-      }
+
+        return !isOverlapping
+      })
     }
 
     const sortFn = (a: BookableSlot, b: BookableSlot) =>
       new Date(a.start_at).getTime() - new Date(b.start_at).getTime()
 
     return {
-      combinedSlots: combined.sort(sortFn),
-      coachOnlySlots: coachOnly.sort(sortFn),
-      courtOnlySlots: courtOnly.sort(sortFn),
+      combinedSlots: filterOverlapping(combined).sort(sortFn),
+      coachOnlySlots: filterOverlapping(coachOnly).sort(sortFn),
+      courtOnlySlots: filterOverlapping(courtOnly).sort(sortFn),
     }
-  }, [selectedService, coachAvails, courtAvails, settings.coach_name])
+  }, [selectedService, coachAvails, courtAvails, bookings, settings.coach_name])
 
   const slotsByMode: Record<SlotMode, BookableSlot[]> = {
     combined: combinedSlots,
@@ -1357,147 +1363,229 @@ export default function BookingFlow({
                 )}
               </div>
             ) : (
-              <div className="overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl bg-zinc-50/30 dark:bg-zinc-955/10 max-h-[460px] scrollbar-thin">
-                <div className="min-w-[680px] p-4">
-                  {/* Table headers (Courts columns / Coach columns) */}
-                  <div
-                    className="grid gap-2 border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-2 text-center text-xs font-bold uppercase tracking-wider text-zinc-500"
-                    style={{
-                      gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
-                    }}
-                  >
-                    <div className="text-left pl-2">Time</div>
-                    {activeMode === 'coach_only' ? (
-                      <div className="text-center">Available Coach Slots</div>
-                    ) : (
-                      courts.map((court) => (
-                        <div key={court.id} className="text-center truncate flex items-center justify-center gap-1.5 pl-2">
-                          <span>🏀 {court.name}</span>
-                          <span
-                            role="button"
-                            onClick={() => {
-                              setMapModalCourt({
-                                name: court.name,
-                                location: court.location || '',
-                                latitude: court.latitude || 10.3157,
-                                longitude: court.longitude || 123.8854,
-                              })
-                            }}
-                            className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
-                            title="View Venue Map"
-                          >
-                            🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
-                          </span>
-                        </div>
-                      ))
-                    )}
-                  </div>
+              <div className="space-y-4">
+                {/* Mobile View: Scrollable list of available slots (visible on small screens only) */}
+                <div className="block sm:hidden space-y-3 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
+                  {slotsOnDate.sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()).map((slot, idx) => {
+                    const isSelected =
+                      selectedSlot?.start_at === slot.start_at &&
+                      selectedSlot?.coach_availability_id === slot.coach_availability_id &&
+                      selectedSlot?.court_availability_id === slot.court_availability_id
 
-                  {/* Table hours rows */}
-                  <div className="space-y-1.5">
-                    {(() => {
-                      const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-                      return HOURS.map((hour) => {
-                        const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
-                        const ampm = hour >= 12 ? 'PM' : 'AM'
-                        const timeLabel = `${displayHour}:00 ${ampm}`
+                    const startTime = formatSlotTime(slot.start_at)
+                    const endTime = formatSlotTime(slot.end_at)
+                    const meta = MODE_META[slot.mode]
 
-                        return (
-                          <div
-                            key={hour}
-                            className="grid gap-2 items-center text-center py-1 border-b border-zinc-100/50 dark:border-zinc-900/30 last:border-b-0"
-                            style={{
-                              gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
-                            }}
-                          >
-                            {/* Hour label */}
-                            <div className="text-left text-[11px] font-bold text-zinc-400 dark:text-zinc-500 pl-2">
-                              {timeLabel}
-                            </div>
-
-                            {/* Slot cell containers */}
-                            {activeMode === 'coach_only' ? (
-                              (() => {
-                                const cellSlots = slotsOnDate.filter((s) => new Date(s.start_at).getHours() === hour)
-                                return (
-                                  <div className="flex flex-col gap-1.5 justify-center items-center min-h-[48px]">
-                                    {cellSlots.length > 0 ? (
-                                      cellSlots.map((slot, sIdx) => {
-                                        const isSelected =
-                                          selectedSlot?.start_at === slot.start_at &&
-                                          selectedSlot?.coach_availability_id === slot.coach_availability_id
-                                        
-                                        return (
-                                          <button
-                                            key={sIdx}
-                                            type="button"
-                                            onClick={() => setSelectedSlot(slot)}
-                                            className={`w-full max-w-sm rounded-xl border-2 p-2.5 text-xs transition duration-200 ${
-                                              isSelected
-                                                ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold shadow-md shadow-orange-500/5'
-                                                : 'border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
-                                            }`}
-                                          >
-                                            <div className="font-extrabold">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
-                                            <div className="text-[10px] text-zinc-500 dark:text-zinc-500 font-semibold mt-0.5">
-                                              ₱{Number(slot.trainingFee).toLocaleString()}
-                                            </div>
-                                          </button>
-                                        )
-                                      })
-                                    ) : (
-                                      <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
-                                    )}
-                                  </div>
-                                )
-                              })()
-                            ) : (
-                              courts.map((court) => {
-                                const cellSlots = slotsOnDate.filter((s) => {
-                                  const d = new Date(s.start_at)
-                                  return d.getHours() === hour && s.court_id === court.id
-                                })
-
-                                return (
-                                  <div key={court.id} className="flex flex-col gap-1.5 justify-center items-center min-h-[48px] border-l border-zinc-200/40 dark:border-zinc-900/20 first:border-l-0">
-                                    {cellSlots.length > 0 ? (
-                                      cellSlots.map((slot, sIdx) => {
-                                        const isSelected =
-                                          selectedSlot?.start_at === slot.start_at &&
-                                          selectedSlot?.coach_availability_id === slot.coach_availability_id &&
-                                          selectedSlot?.court_availability_id === slot.court_availability_id
-                                        
-                                        const meta = MODE_META[slot.mode]
-                                        
-                                        return (
-                                          <button
-                                            key={sIdx}
-                                            type="button"
-                                            onClick={() => setSelectedSlot(slot)}
-                                            className={`w-full max-w-[180px] rounded-xl border-2 p-2 text-xs transition duration-200 ${
-                                              isSelected
-                                                ? `${meta.border} ${meta.bg} ${meta.color} font-bold shadow-md`
-                                                : `border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30`
-                                            }`}
-                                          >
-                                            <div className="font-extrabold leading-tight">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
-                                            <div className="text-[10px] font-semibold mt-0.5 opacity-90">
-                                              ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
-                                            </div>
-                                          </button>
-                                        )
-                                      })
-                                    ) : (
-                                      <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
-                                    )}
-                                  </div>
-                                )
-                              })
-                            )}
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full text-left rounded-2xl border-2 p-4 transition duration-200 flex items-center justify-between gap-4 ${
+                          isSelected
+                            ? `${meta.border} ${meta.bg} shadow-md`
+                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          {/* Mode Badge */}
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+                            <span className={`text-[9px] uppercase font-black tracking-wider ${meta.badgeText}`}>
+                              {slot.mode === 'combined' ? 'Coach + Court' : slot.mode === 'coach_only' ? 'Coach Only' : 'Court Only'}
+                            </span>
                           </div>
-                        )
-                      })
-                    })()}
+
+                          {/* Time Interval */}
+                          <div className="text-sm font-extrabold text-zinc-950 dark:text-white leading-tight">
+                            {startTime} – {endTime}
+                          </div>
+
+                          {/* Coach / Court Details */}
+                          {slot.courtName && (
+                            <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-1 truncate font-semibold">
+                              🏀 {slot.courtName}
+                            </div>
+                          )}
+                          {slot.coachName && (
+                            <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5 truncate font-semibold">
+                              👤 {slot.coachName}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="text-right flex flex-col items-end gap-1.5">
+                          <div className="text-sm font-black text-orange-500">
+                            ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
+                          </div>
+
+                          {/* Map Toggle Link */}
+                          {slot.courtName && (
+                            <span
+                              role="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setMapModalCourt({
+                                  name: slot.courtName || 'Court',
+                                  location: slot.courtLocation || '',
+                                  latitude: slot.latitude || 10.3157,
+                                  longitude: slot.longitude || 123.8854,
+                                })
+                              }}
+                              className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
+                            >
+                              🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
+                            </span>
+                          )}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Desktop View: Horizontal timetable grid (visible on larger screens only) */}
+                <div className="hidden sm:block overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl bg-zinc-50/30 dark:bg-zinc-955/10 max-h-[460px] scrollbar-thin">
+                  <div className="min-w-[680px] p-4">
+                    {/* Table headers */}
+                    <div
+                      className="grid gap-2 border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-2 text-center text-xs font-bold uppercase tracking-wider text-zinc-500"
+                      style={{
+                        gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                      }}
+                    >
+                      <div className="text-left pl-2">Time</div>
+                      {activeMode === 'coach_only' ? (
+                        <div className="text-center">Available Coach Slots</div>
+                      ) : (
+                        courts.map((court) => (
+                          <div key={court.id} className="text-center truncate flex items-center justify-center gap-1.5 pl-2">
+                            <span>🏀 {court.name}</span>
+                            <span
+                              role="button"
+                              onClick={() => {
+                                setMapModalCourt({
+                                  name: court.name,
+                                  location: court.location || '',
+                                  latitude: court.latitude || 10.3157,
+                                  longitude: court.longitude || 123.8854,
+                                })
+                              }}
+                              className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
+                              title="View Venue Map"
+                            >
+                              🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    {/* Table hours rows */}
+                    <div className="space-y-1.5">
+                      {(() => {
+                        const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                        return HOURS.map((hour) => {
+                          const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+                          const ampm = hour >= 12 ? 'PM' : 'AM'
+                          const timeLabel = `${displayHour}:00 ${ampm}`
+
+                          return (
+                            <div
+                              key={hour}
+                              className="grid gap-2 items-center text-center py-1 border-b border-zinc-100/50 dark:border-zinc-900/30 last:border-b-0"
+                              style={{
+                                gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                              }}
+                            >
+                              {/* Hour label */}
+                              <div className="text-left text-[11px] font-bold text-zinc-400 dark:text-zinc-500 pl-2">
+                                {timeLabel}
+                              </div>
+
+                              {/* Slot cell containers */}
+                              {activeMode === 'coach_only' ? (
+                                (() => {
+                                  const cellSlots = slotsOnDate.filter((s) => new Date(s.start_at).getHours() === hour)
+                                  return (
+                                    <div className="flex flex-col gap-1.5 justify-center items-center min-h-[48px]">
+                                      {cellSlots.length > 0 ? (
+                                        cellSlots.map((slot, sIdx) => {
+                                          const isSelected =
+                                            selectedSlot?.start_at === slot.start_at &&
+                                            selectedSlot?.coach_availability_id === slot.coach_availability_id
+
+                                          return (
+                                            <button
+                                              key={sIdx}
+                                              type="button"
+                                              onClick={() => setSelectedSlot(slot)}
+                                              className={`w-full max-w-sm rounded-xl border-2 p-2.5 text-xs transition duration-200 ${
+                                                isSelected
+                                                  ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold shadow-md shadow-orange-500/5'
+                                                  : 'border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
+                                              }`}
+                                            >
+                                              <div className="font-extrabold">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                              <div className="text-[10px] text-zinc-500 dark:text-zinc-500 font-semibold mt-0.5">
+                                                ₱{Number(slot.trainingFee).toLocaleString()}
+                                              </div>
+                                            </button>
+                                          )
+                                        })
+                                      ) : (
+                                        <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                      )}
+                                    </div>
+                                  )
+                                })()
+                              ) : (
+                                courts.map((court) => {
+                                  const cellSlots = slotsOnDate.filter((s) => {
+                                    const d = new Date(s.start_at)
+                                    return d.getHours() === hour && s.court_id === court.id
+                                  })
+
+                                  return (
+                                    <div key={court.id} className="flex flex-col gap-1.5 justify-center items-center min-h-[48px] border-l border-zinc-200/40 dark:border-zinc-900/20 first:border-l-0">
+                                      {cellSlots.length > 0 ? (
+                                        cellSlots.map((slot, sIdx) => {
+                                          const isSelected =
+                                            selectedSlot?.start_at === slot.start_at &&
+                                            selectedSlot?.coach_availability_id === slot.coach_availability_id &&
+                                            selectedSlot?.court_availability_id === slot.court_availability_id
+
+                                          const meta = MODE_META[slot.mode]
+
+                                          return (
+                                            <button
+                                              key={sIdx}
+                                              type="button"
+                                              onClick={() => setSelectedSlot(slot)}
+                                              className={`w-full max-w-[180px] rounded-xl border-2 p-2 text-xs transition duration-200 ${
+                                                isSelected
+                                                  ? `${meta.border} ${meta.bg} ${meta.color} font-bold shadow-md`
+                                                  : `border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30`
+                                              }`}
+                                            >
+                                              <div className="font-extrabold leading-tight">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                              <div className="text-[10px] font-semibold mt-0.5 opacity-90">
+                                                ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
+                                              </div>
+                                            </button>
+                                          )
+                                        })
+                                      ) : (
+                                        <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                      )}
+                                    </div>
+                                  )
+                                })
+                              )}
+                            </div>
+                          )
+                        })
+                      })()}
+                    </div>
                   </div>
                 </div>
               </div>

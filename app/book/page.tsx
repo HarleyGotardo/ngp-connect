@@ -46,6 +46,12 @@ export default async function BookPage() {
     .select('*, courts(*)')
     .eq('status', 'available')
 
+  // Fetch active Bookings (to dynamically filter out taken slots for privacy/concurrency)
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('start_at, end_at, coach_id, court_id, status')
+    .neq('status', 'CANCELLED')
+
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-955 text-zinc-900 dark:text-white font-sans selection:bg-orange-500 selection:text-black transition-colors duration-200">
       {/* Background Graphic Accent */}
@@ -98,6 +104,7 @@ export default async function BookPage() {
         }}
         coachAvails={(coachAvails as any) || []}
         courtAvails={(courtAvails as any) || []}
+        bookings={(bookings as any) || []}
         packages={packages || []}
       />
     </div>
