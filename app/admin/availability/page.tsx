@@ -83,6 +83,10 @@ export default function AvailabilityManager() {
   const [formStartTime, setFormStartTime] = useState('')
   const [formEndTime, setFormEndTime] = useState('')
   const [alsoCreateCourtBlocks, setAlsoCreateCourtBlocks] = useState(false)
+
+  // HOVER VISUALIZER PREVIEW STATE
+  const [hoveredDay, setHoveredDay] = useState<Date | null>(null)
+  const [hoveredStartMin, setHoveredStartMin] = useState<number | null>(null)
   const [selectedFormCourtIds, setSelectedFormCourtIds] = useState<string[]>([])
   const [alsoCreateCoachBlock, setAlsoCreateCoachBlock] = useState(false)
 
@@ -229,6 +233,28 @@ export default function AvailabilityManager() {
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     // Disallow multi-hour dragging; always lock slots to exactly 1 hour.
     if (!isSelecting || !selectionDay) return
+  }
+
+  const handleColumnMouseMove = (dayDate: Date, e: React.MouseEvent<HTMLDivElement>) => {
+    // Hide visualizer if mouse is currently hovering over an existing event card
+    if ((e.target as HTMLElement).closest('.event-card')) {
+      setHoveredDay(null)
+      setHoveredStartMin(null)
+      return
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect()
+    const clickY = e.clientY - rect.top
+    const minutes = Math.floor(clickY)
+    const rounded = Math.round(minutes / 30) * 30
+
+    setHoveredDay(dayDate)
+    setHoveredStartMin(rounded)
+  }
+
+  const handleColumnMouseLeave = () => {
+    setHoveredDay(null)
+    setHoveredStartMin(null)
   }
 
   const handleMouseUp = () => {
@@ -723,10 +749,44 @@ export default function AvailabilityManager() {
                 <div
                   key={colIdx}
                   onMouseDown={(e) => handleMouseDown(day, e)}
-                  onMouseMove={handleMouseMove}
+                  onMouseMove={(e) => {
+                    handleMouseMove(e)
+                    handleColumnMouseMove(day, e)
+                  }}
+                  onMouseLeave={handleColumnMouseLeave}
                   onMouseUp={handleMouseUp}
                   className="border-l border-zinc-200 dark:border-zinc-900/60 h-full relative hover:bg-zinc-100/30 dark:hover:bg-zinc-900/10 cursor-crosshair transition-colors z-10"
                 >
+                  {/* Hover visualizer preview card */}
+                  {hoveredDay && isSameDay(hoveredDay, day) && hoveredStartMin !== null && !isSelecting && !showAddModal && (
+                    <div
+                      style={{
+                        top: `${hoveredStartMin}px`,
+                        height: '60px',
+                        width: '92%',
+                        left: '4%',
+                      }}
+                      className="absolute z-0 rounded-lg border-2 border-dashed border-orange-500/40 bg-orange-500/5 text-orange-500/60 p-2 text-[10px] flex flex-col justify-between pointer-events-none transition-all duration-75 animate-pulse"
+                    >
+                      <div>
+                        <div className="font-extrabold tracking-wide uppercase text-[7px] text-orange-500/70">✨ New Slot Preview</div>
+                        <div className="font-bold text-zinc-450 dark:text-zinc-500 mt-0.5 leading-none">Click to create availability</div>
+                      </div>
+                      <div className="font-bold mt-1 text-[8px] opacity-90 leading-none">
+                        {(() => {
+                          const startHour = START_HOUR + Math.floor(hoveredStartMin / 60)
+                          const startMin = hoveredStartMin % 60
+                          const endMinutes = hoveredStartMin + 60
+                          const endHour = START_HOUR + Math.floor(endMinutes / 60)
+                          const endMin = endMinutes % 60
+                          const sTime = new Date(2020, 1, 1, startHour, startMin).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                          const eTime = new Date(2020, 1, 1, endHour, endMin).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                          return `${sTime} - ${eTime}`
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Highlighter Block */}
                   {isHighlighterVisible && (
                     <div
