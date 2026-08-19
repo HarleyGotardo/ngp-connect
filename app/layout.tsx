@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "New Gen Performance - NGP Basketball Training & Booking",
   description: "Personalized basketball training by Paul Maldo. Focus on decelerating mechanics, lateral change of directions, speed, and in-game transitions.",
   icons: {
-    icon: "/NGP2.png",
+    icon: "/NGP.png",
   },
 };
 

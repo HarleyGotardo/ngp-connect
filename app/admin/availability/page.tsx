@@ -892,7 +892,7 @@ export default function AvailabilityManager() {
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-orange-500">Coach Block</div>
-                              <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-none">JP Availability</div>
+                              <div className="font-bold text-zinc-950 dark:text-white mt-0.5 leading-none">Available</div>
                             </div>
                             <div className="font-bold mt-1 text-[9px] opacity-90 leading-none">{dStart} - {dEnd}</div>
                           </div>

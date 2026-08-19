@@ -206,7 +206,7 @@ export default function BookingLookup() {
         <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl transition-colors duration-200">
           <form onSubmit={handleLookup} className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-end">
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                 Booking Reference
               </label>
               <input
@@ -215,12 +215,12 @@ export default function BookingLookup() {
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
                 placeholder="e.g. NGP-2026-00042"
-                className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500 uppercase"
+                className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none focus:border-orange-500 transition-colors duration-200 uppercase"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                 Email or Contact Number
               </label>
               <input
@@ -229,7 +229,7 @@ export default function BookingLookup() {
                 value={emailOrPhone}
                 onChange={(e) => setEmailOrPhone(e.target.value)}
                 placeholder="e.g. athlete@gmail.com"
-                className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500"
+                className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none focus:border-orange-500 transition-colors duration-200"
               />
             </div>
 
@@ -257,13 +257,11 @@ export default function BookingLookup() {
           <div className="mt-8 rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400 text-center font-medium">
             Session cancelled successfully. The coach has been notified and refund requests have been submitted.
           </div>
-        )}
-
-        {/* BOOKING RESULTS DISPLAY */}
+        )}        {/* BOOKING RESULTS DISPLAY */}
         {booking && (
-          <div className="mt-8 rounded-2xl border border-zinc-900 bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6">
+          <div className="mt-8 rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/60 p-6 sm:p-8 backdrop-blur-xl shadow-2xl space-y-6 text-zinc-900 dark:text-white">
             {/* Header / Badges */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-zinc-800 pb-4 gap-3">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-zinc-150 dark:border-zinc-800 pb-4 gap-3">
               <div>
                 <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-widest block">Reference Code</span>
                 <span className="text-xl font-black text-orange-500 tracking-wider mt-0.5 block">
@@ -279,17 +277,17 @@ export default function BookingLookup() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
               <div className="space-y-1">
                 <span className="text-zinc-500 block">Training Service</span>
-                <span className="font-bold text-white block">{booking.service_name}</span>
+                <span className="font-bold text-zinc-900 dark:text-white block">{booking.service_name}</span>
               </div>
 
               <div className="space-y-1">
                 <span className="text-zinc-500 block">Athlete Name</span>
-                <span className="font-bold text-white block">{booking.client_name} ({booking.client_age}yo)</span>
+                <span className="font-bold text-zinc-900 dark:text-white block">{booking.client_name} ({booking.client_age}yo)</span>
               </div>
 
               <div className="space-y-1">
                 <span className="text-zinc-500 block">Schedule Date</span>
-                <span className="font-semibold text-white block">{formatSlotDate(booking.start_at)}</span>
+                <span className="font-semibold text-zinc-900 dark:text-white block">{formatSlotDate(booking.start_at)}</span>
               </div>
 
               <div className="space-y-1">
@@ -301,23 +299,23 @@ export default function BookingLookup() {
 
               <div className="space-y-1 sm:col-span-2">
                 <span className="text-zinc-500 block">Basketball Court</span>
-                <span className="font-semibold text-white block">
+                <span className="font-semibold text-zinc-900 dark:text-white block">
                   🏀 {booking.court_name}
                 </span>
-                <span className="text-xs text-zinc-400 block">{booking.court_location}</span>
+                <span className="text-xs text-zinc-550 dark:text-zinc-400 block">{booking.court_location}</span>
               </div>
             </div>
 
             {/* Financial Invoice Details */}
-            <div className="rounded-xl bg-zinc-950 p-6 space-y-3 text-sm border border-zinc-900">
-              <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-500 pb-1 border-b border-zinc-900/60">
+            <div className="rounded-xl bg-zinc-50 dark:bg-zinc-955 p-6 space-y-3 text-sm border border-zinc-200 dark:border-zinc-900">
+              <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-500 pb-1 border-b border-zinc-150 dark:border-zinc-900/60">
                 Payment Breakdowns
               </h4>
               <div className="flex justify-between">
                 <span className="text-zinc-500">Coaching Fee</span>
                 <span>₱{Number(booking.training_fee).toLocaleString()}</span>
               </div>
-              <div className="flex justify-between border-b border-zinc-900 pb-2">
+              <div className="flex justify-between border-b border-zinc-150 dark:border-zinc-900 pb-2">
                 <span className="text-zinc-500">Court Rental Fee</span>
                 <span>₱{Number(booking.court_fee).toLocaleString()}</span>
               </div>
@@ -328,7 +326,7 @@ export default function BookingLookup() {
             </div>
 
             {/* Self-service cancellation box */}
-            <div className="border-t border-zinc-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="border-t border-zinc-150 dark:border-zinc-800 pt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
               <p className="text-xs text-zinc-500 max-w-md leading-relaxed text-center sm:text-left">
                 Online cancellation is allowed up to 24 hours prior to the session start.
                 If within 24 hours, online cancellation is disabled. Please contact New Gen Performance.
@@ -343,7 +341,7 @@ export default function BookingLookup() {
                   Cancel Booking
                 </button>
               ) : (
-                <span className="text-xs font-bold text-zinc-600 bg-zinc-900 border border-zinc-850 px-4 py-2 rounded-lg cursor-not-allowed select-none flex-shrink-0">
+                <span className="text-xs font-bold text-zinc-400 dark:text-zinc-600 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 px-4 py-2 rounded-lg cursor-not-allowed select-none flex-shrink-0">
                   Online Cancellation Unavailable
                 </span>
               )}
@@ -355,10 +353,10 @@ export default function BookingLookup() {
       {/* CANCELLATION MODAL */}
       {showCancelModal && booking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200">
-            <h3 className="text-lg font-bold mb-2">Cancel Training Session</h3>
-            <p className="text-xs text-zinc-400 mb-4">
-              You are cancelling your booking for <span className="font-semibold text-white">{booking.service_name}</span> scheduled on {formatSlotDate(booking.start_at)}.
+          <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
+            <h3 className="text-base font-extrabold tracking-tight">Request Cancellation</h3>
+            <p className="text-xs text-zinc-550 dark:text-zinc-400 mt-2 mb-4">
+              You are cancelling your booking for <span className="font-semibold text-zinc-900 dark:text-white">{booking.service_name}</span> scheduled on {formatSlotDate(booking.start_at)}.
             </p>
 
             <form onSubmit={handleCancelBooking} className="space-y-4">
@@ -369,7 +367,7 @@ export default function BookingLookup() {
               )}
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-400">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
                   Reason for Cancellation
                 </label>
                 <textarea
@@ -378,7 +376,7 @@ export default function BookingLookup() {
                   onChange={(e) => setCancelReason(e.target.value)}
                   placeholder="e.g. Conflict in schedule..."
                   rows={3}
-                  className="mt-2 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5 text-sm text-white placeholder-zinc-700 outline-none focus:border-orange-500 resize-none"
+                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-955 px-3 py-2.5 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 outline-none focus:border-orange-500 resize-none transition-colors duration-200"
                 />
               </div>
 
@@ -391,7 +389,7 @@ export default function BookingLookup() {
                     setCancelReason('')
                     setCancelError(null)
                   }}
-                  className="rounded-lg border border-zinc-850 bg-zinc-850 px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-white hover:bg-zinc-800"
+                  className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-850 dark:text-white dark:hover:bg-zinc-800 px-4 py-2.5 text-xs font-bold uppercase tracking-wider transition"
                 >
                   Close
                 </button>
