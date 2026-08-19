@@ -48,13 +48,13 @@ const FALLBACK_REVIEWS = [
     id: 'r1',
     client_name: 'Marcus Rivera',
     rating: 5,
-    review_text: 'Coach JPs attention to detail corrected my shooting release in just 3 sessions. His skill workouts are game-focused and incredibly intense.',
+    review_text: 'Pauls attention to detail corrected my shooting release in just 3 sessions. His skill workouts are game-focused and incredibly intense.',
   },
   {
     id: 'r2',
     client_name: 'Kenzo Sy',
     rating: 5,
-    review_text: 'The 2-on-1 sessions helped my brother and me develop better chemistry on court. Coach JP explains the "why" behind every movement pattern.',
+    review_text: 'The 2-on-1 sessions helped my brother and me develop better chemistry on court. Paul explains the "why" behind every movement pattern.',
   }
 ]
 
@@ -140,10 +140,10 @@ export default async function Home() {
                 Book Your First Session
               </Link>
               <a
-                href="#about"
+                href="#services"
                 className="inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:bg-zinc-900 dark:text-white px-8 py-4 text-base font-bold uppercase tracking-widest transition"
               >
-                Explore The Method
+                Explore Programs
               </a>
             </div>
           </div>
@@ -160,59 +160,6 @@ export default async function Home() {
             <circle cx="80" cy="50" r="10" strokeWidth="0.5" />
             <line x1="50" y1="5" x2="50" y2="95" strokeWidth="0.5" />
           </svg>
-        </div>
-      </section>
-
-      {/* VALUE POSITION (Hormozi Frame: Unique Value Delivery) */}
-      <section className="border-t border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 py-20 sm:py-28" id="about">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-orange-500">The New Generation System</h2>
-            <p className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl text-zinc-950 dark:text-white">
-              Why NGP Beats Old-School Training
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Deceleration and Acceleration dynamics */}
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-900/30 p-8 hover:border-orange-500/20 transition-all group">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 mb-6 group-hover:bg-orange-500 group-hover:text-black transition-colors">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-3">Deceleration & Acceleration</h3>
-              <p className="text-zinc-550 dark:text-zinc-400 leading-relaxed text-sm">
-                Most players know how to run, but not how to stop. Master decelerating mechanics, lateral change of directions, and explosive re-acceleration studied directly from elite US coaches clinics.
-              </p>
-            </div>
-
-            {/* In-game translation conditioning */}
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-900/30 p-8 hover:border-orange-500/20 transition-all group">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 mb-6 group-hover:bg-orange-500 group-hover:text-black transition-colors">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-3">In-Game Conditioning</h3>
-              <p className="text-zinc-550 dark:text-zinc-400 leading-relaxed text-sm">
-                No mindless suicide sprint lines. Our conditioning workouts simulate actual transition states, defensive coverage closes, and live game movement patterns so you never gas out during key quarters.
-              </p>
-            </div>
-
-            {/* Fun & Engaging Active Learning */}
-            <div className="rounded-2xl border border-zinc-200 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-900/30 p-8 hover:border-orange-500/20 transition-all group">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 mb-6 group-hover:bg-orange-500 group-hover:text-black transition-colors">
-                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-zinc-900 dark:text-white mb-3">Engaging & Screamless Learning</h3>
-              <p className="text-zinc-550 dark:text-zinc-400 leading-relaxed text-sm">
-                Athletes improve when they feel confident and have fun. Coach JP guides through encouraging communication and active constraint scenarios — not by screaming at you from the sideline.
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -245,13 +192,13 @@ export default async function Home() {
                       <span className="text-3xl font-extrabold text-orange-500">
                         ₱{Number(service.price).toLocaleString()}
                       </span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 self-center font-medium">
-                        / {service.duration_minutes} mins
+                      <span className="text-xs text-zinc-550 dark:text-zinc-400 self-center font-bold">
+                        per session
                       </span>
                     </div>
 
                     <div className="mt-4 flex flex-col gap-1.5">
-                      <div className="inline-flex items-center gap-1.5 text-xs text-zinc-550 dark:text-zinc-400 font-medium">
+                      <div className="inline-flex items-center gap-1.5 text-xs text-zinc-555 dark:text-zinc-400 font-medium">
                         ⏱️ {service.duration_minutes} Minutes Duration
                       </div>
                     </div>
@@ -303,7 +250,7 @@ export default async function Home() {
                         {pkg.number_of_sessions} Sessions included
                       </div>
                       <h3 className="text-lg font-bold text-zinc-900 dark:text-white mt-4 leading-snug">{pkg.name}</h3>
-                      <div className="mt-4 flex items-baseline">
+                      <div className="mt-4 flex items-baseline flex-wrap gap-1.5">
                         {pkg.original_price && (
                           <span className="text-sm text-zinc-450 line-through mr-2 font-semibold">
                             ₱{Number(pkg.original_price).toLocaleString()}
@@ -311,6 +258,9 @@ export default async function Home() {
                         )}
                         <span className="text-3xl font-extrabold text-orange-500">
                           ₱{Number(pkg.price).toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-bold self-center">
+                          (Packaged to all sessions)
                         </span>
                       </div>
                     </div>
@@ -366,7 +316,7 @@ export default async function Home() {
               </div>
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Pick Time Slot</h3>
               <p className="text-zinc-550 dark:text-zinc-400 text-xs leading-relaxed">
-                Select your preferred slot matching Coach JP and the basketball court.
+                Select your preferred slot matching Paul and the basketball court.
               </p>
             </div>
 
@@ -389,47 +339,8 @@ export default async function Home() {
               </div>
               <h3 className="text-lg font-bold text-zinc-900 dark:text-white mb-2">Start Training</h3>
               <p className="text-zinc-550 dark:text-zinc-400 text-xs leading-relaxed">
-                You receive a unique lookup code. Coach JP reviews payment reference and confirms.
+                You receive a unique lookup code. Paul reviews payment reference and confirms.
               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* MEET COACH SECTION */}
-      <section className="border-t border-zinc-200 dark:border-zinc-900 bg-zinc-100/30 dark:bg-zinc-955/40 py-20 sm:py-28" id="coach">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            {/* Bio Column */}
-            <div className="lg:col-span-7">
-              <span className="text-xs font-semibold uppercase tracking-widest text-orange-500 font-bold">The Coach</span>
-              <h2 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl text-zinc-950 dark:text-white">
-                Meet Coach {settings.coach_name}
-              </h2>
-              <div className="mt-6 border-l-4 border-orange-500 pl-6 text-zinc-700 dark:text-zinc-300 italic text-base leading-relaxed">
-                &ldquo;We focus on dynamic basketball conditioning and biomechanics. Every drill simulates real game constraints. Learning is an engaging experience.&rdquo;
-              </div>
-              <p className="mt-6 text-zinc-550 dark:text-zinc-400 text-sm leading-relaxed">
-                Coach {settings.coach_name} trains athletes by implementing modern basketball systems studied from elite coaching clinics in the United States. NGP programs move away from static drills and screaming coaches, using game scenarios to improve deceleration, change of direction, and court speed.
-              </p>
-            </div>
-
-            {/* Visual Column / Card */}
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-zinc-200 bg-white dark:border-zinc-900 dark:bg-zinc-900/60 p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-orange-500/10 blur-xl" />
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white mb-4">Training Guidelines</h3>
-                <ul className="space-y-4 text-xs text-zinc-550 dark:text-zinc-400">
-                  <li className="flex gap-3">
-                    <span className="text-orange-500 font-extrabold">✓</span>
-                    <span>Required: Athlete Full Name, Email, and Phone Number.</span>
-                  </li>
-                  <li className="flex gap-3">
-                    <span className="text-orange-500 font-extrabold">✓</span>
-                    <span>Please cancel bookings at least {settings.cancellation_hours} hours in advance if schedule conflict occurs.</span>
-                  </li>
-                </ul>
-              </div>
             </div>
           </div>
         </div>
@@ -527,9 +438,6 @@ export default async function Home() {
           <h2 className="text-3xl font-extrabold tracking-tight text-zinc-955 dark:text-white sm:text-5xl uppercase">
             YOUR NEXT LEVEL STARTS WITH YOUR NEXT SESSION
           </h2>
-          <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-550 dark:text-zinc-400">
-            Ditch outdated screamed drills. Choose your program, pick your schedule, submit GCash, and prepare for games with purpose.
-          </p>
           <div className="mt-10 flex justify-center">
             <Link
               href="/book"
@@ -557,9 +465,7 @@ export default async function Home() {
 
             {/* Links */}
             <div className="flex flex-wrap justify-center gap-6 text-xs text-zinc-650 dark:text-zinc-500 font-semibold tracking-wide uppercase">
-              <a href="#about" className="hover:text-zinc-950 dark:hover:text-zinc-300 transition">New Gen Method</a>
               <a href="#services" className="hover:text-zinc-955 dark:hover:text-zinc-300 transition">Programs</a>
-              <a href="#coach" className="hover:text-zinc-955 dark:hover:text-zinc-300 transition">The Coach</a>
               <Link href="/booking/lookup" className="hover:text-zinc-955 dark:hover:text-zinc-300 transition">Lookup Booking</Link>
               <Link href="/admin/login" className="hover:text-orange-500 transition">Coach Portal</Link>
             </div>

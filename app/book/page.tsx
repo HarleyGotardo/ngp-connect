@@ -84,7 +84,7 @@ export default async function BookPage() {
           Reserve Your Training Slot
         </h1>
         <p className="mt-2 text-sm text-zinc-550 dark:text-zinc-400 max-w-md mx-auto">
-          Complete self-service scheduling. Lock in Coach JP and your training court instantly.
+          Complete self-service scheduling. Lock in Coach {settings.coach_name} and your training court instantly.
         </p>
       </div>
 

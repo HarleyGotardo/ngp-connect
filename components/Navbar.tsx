@@ -23,7 +23,7 @@ export default function Navbar() {
   useEffect(() => {
     if (typeof window === 'undefined') return
 
-    const sections = ['about', 'services', 'how-it-works', 'coach', 'reviews']
+    const sections = ['services', 'how-it-works', 'reviews']
     const observerOptions = {
       root: null,
       rootMargin: '-25% 0px -55% 0px',
@@ -100,21 +100,6 @@ export default function Navbar() {
         {/* Desktop Links */}
         <nav className="hidden md:flex items-center gap-7 text-[13px] font-bold tracking-wide text-zinc-550 dark:text-zinc-400">
           <a
-            href="#about"
-            className={`relative py-1.5 transition-colors duration-250 group ${
-              activeSection === 'about'
-                ? 'text-orange-500'
-                : 'text-zinc-650 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-500'
-            }`}
-          >
-            <span>Method</span>
-            <span
-              className={`absolute bottom-0 left-0 h-[2.5px] bg-orange-500 transition-all duration-300 ${
-                activeSection === 'about' ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}
-            />
-          </a>
-          <a
             href="#services"
             className={`relative py-1.5 transition-colors duration-250 group ${
               activeSection === 'services'
@@ -141,21 +126,6 @@ export default function Navbar() {
             <span
               className={`absolute bottom-0 left-0 h-[2.5px] bg-orange-500 transition-all duration-300 ${
                 activeSection === 'how-it-works' ? 'w-full' : 'w-0 group-hover:w-full'
-              }`}
-            />
-          </a>
-          <a
-            href="#coach"
-            className={`relative py-1.5 transition-colors duration-250 group ${
-              activeSection === 'coach'
-                ? 'text-orange-500'
-                : 'text-zinc-650 hover:text-orange-500 dark:text-zinc-400 dark:hover:text-orange-500'
-            }`}
-          >
-            <span>The Coach</span>
-            <span
-              className={`absolute bottom-0 left-0 h-[2.5px] bg-orange-500 transition-all duration-300 ${
-                activeSection === 'coach' ? 'w-full' : 'w-0 group-hover:w-full'
               }`}
             />
           </a>
@@ -209,17 +179,7 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden border-t border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 p-4 space-y-3 animate-in fade-in slide-in-from-top-4 duration-200">
           <nav className="flex flex-col gap-3 text-sm font-semibold text-zinc-655 dark:text-zinc-400">
-            <a
-              href="#about"
-              onClick={() => setIsOpen(false)}
-              className={`p-2 rounded-lg transition ${
-                activeSection === 'about'
-                  ? 'bg-orange-500/10 text-orange-500 font-bold'
-                  : 'hover:bg-zinc-100 hover:text-zinc-950 dark:hover:bg-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              METHOD
-            </a>
+
             <a
               href="#services"
               onClick={() => setIsOpen(false)}
@@ -242,17 +202,7 @@ export default function Navbar() {
             >
               HOW TO BOOK
             </a>
-            <a
-              href="#coach"
-              onClick={() => setIsOpen(false)}
-              className={`p-2 rounded-lg transition ${
-                activeSection === 'coach'
-                  ? 'bg-orange-500/10 text-orange-500 font-bold'
-                  : 'hover:bg-zinc-100 hover:text-zinc-955 dark:hover:bg-zinc-900 dark:hover:text-white'
-              }`}
-            >
-              THE COACH
-            </a>
+
             <a
               href="#reviews"
               onClick={() => setIsOpen(false)}

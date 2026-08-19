@@ -160,7 +160,7 @@ export default function AvailabilityManager() {
     if (weekDays.length === 0) return ''
     const start = weekDays[0]
     const end = weekDays[6]
-    
+
     const startMonth = start.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' })
     const startYear = start.getFullYear()
     const endMonth = end.toLocaleDateString('en-US', { month: 'long', timeZone: 'Asia/Manila' })
@@ -217,7 +217,7 @@ export default function AvailabilityManager() {
   // MOUSE DRAG / CLICK SCHEDULING SELECTION
   const handleMouseDown = (dayDate: Date, e: React.MouseEvent<HTMLDivElement>) => {
     if ((e.target as HTMLElement).closest('.event-card')) return
-    
+
     const rect = e.currentTarget.getBoundingClientRect()
     const clickY = e.clientY - rect.top
     const minutes = Math.floor(clickY)
@@ -261,11 +261,11 @@ export default function AvailabilityManager() {
     if (!isSelecting || !selectionDay) return
 
     setIsSelecting(false)
-    
+
     // Format selection to form inputs
     const pad = (num: number) => String(num).padStart(2, '0')
     const formattedDate = `${selectionDay.getFullYear()}-${pad(selectionDay.getMonth() + 1)}-${pad(selectionDay.getDate())}`
-    
+
     const startHour = START_HOUR + Math.floor(selectStartMin / 60)
     const startMin = selectStartMin % 60
     const formattedStart = `${pad(startHour)}:${pad(startMin)}`
@@ -415,7 +415,7 @@ export default function AvailabilityManager() {
           <h1 className="text-3xl font-extrabold tracking-tight">Availability Planner</h1>
           <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Google Calendar interactive scheduling view for NGP.</p>
         </div>
-        
+
         <button
           onClick={() => {
             const now = new Date()
@@ -444,7 +444,7 @@ export default function AvailabilityManager() {
           >
             Today
           </button>
-          
+
           <div className="flex rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <button
               onClick={handlePrevWeek}
@@ -515,7 +515,7 @@ export default function AvailabilityManager() {
               mobileItems.push({
                 type: 'combined',
                 id: coach.id,
-                title: `Coach JP + ${courtNames || 'Court'}`,
+                title: `Paul + ${courtNames || 'Court'}`,
                 start: coach.start_at,
                 end: coach.end_at,
                 status: coach.status,
@@ -525,7 +525,7 @@ export default function AvailabilityManager() {
               mobileItems.push({
                 type: 'coach',
                 id: coach.id,
-                title: 'Coach JP Available',
+                title: 'Paul Available',
                 start: coach.start_at,
                 end: coach.end_at,
                 status: coach.status,
@@ -557,16 +557,15 @@ export default function AvailabilityManager() {
               {/* Day Header */}
               <div className="flex justify-between items-center border-b border-zinc-100 dark:border-zinc-900/60 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className={`h-6 w-6 rounded-full flex items-center justify-center font-extrabold text-xs ${
-                    isToday ? 'bg-orange-500 text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white'
-                  }`}>
+                  <span className={`h-6 w-6 rounded-full flex items-center justify-center font-extrabold text-xs ${isToday ? 'bg-orange-500 text-black' : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white'
+                    }`}>
                     {day.getDate()}
                   </span>
                   <span className="font-bold text-sm text-zinc-900 dark:text-white uppercase tracking-wider">
                     {day.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Manila' })}
                   </span>
                 </div>
-                
+
                 {/* Plus button to add slot directly for this day */}
                 <button
                   onClick={() => {
@@ -606,7 +605,7 @@ export default function AvailabilityManager() {
                             handleOpenDetail({
                               id: item.id,
                               type: 'coach',
-                              title: 'Coach JP + Court Open',
+                              title: 'Paul + Court Open',
                               start: item.start,
                               end: item.end,
                               status: item.status,
@@ -636,7 +635,7 @@ export default function AvailabilityManager() {
                             handleOpenDetail({
                               id: item.id,
                               type: 'coach',
-                              title: 'Coach JP Available',
+                              title: 'Paul Available',
                               start: item.start,
                               end: item.end,
                               status: item.status,
@@ -645,7 +644,7 @@ export default function AvailabilityManager() {
                           className="p-3 rounded-lg border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs flex justify-between items-center cursor-pointer hover:bg-orange-500/10 transition"
                         >
                           <div className="space-y-0.5">
-                            <div className="font-extrabold uppercase text-[9px] text-orange-500">Coach JP Available</div>
+                            <div className="font-extrabold uppercase text-[9px] text-orange-500">Paul Available</div>
                             <div className="font-bold text-zinc-900 dark:text-white">{displayStart} - {displayEnd}</div>
                           </div>
                           <span className="text-[10px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded font-bold uppercase">{item.status}</span>
@@ -700,9 +699,8 @@ export default function AvailabilityManager() {
                   <div className="font-bold text-zinc-550 dark:text-zinc-500 uppercase tracking-wide">
                     {day.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'Asia/Manila' })}
                   </div>
-                  <div className={`mt-1.5 mx-auto h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-sm ${
-                    isToday ? 'bg-orange-500 text-black shadow shadow-orange-500/20' : 'text-zinc-800 dark:text-white'
-                  }`}>
+                  <div className={`mt-1.5 mx-auto h-7 w-7 rounded-full flex items-center justify-center font-extrabold text-sm ${isToday ? 'bg-orange-500 text-black shadow shadow-orange-500/20' : 'text-zinc-800 dark:text-white'
+                    }`}>
                     {day.getDate()}
                   </div>
                 </div>
@@ -711,8 +709,8 @@ export default function AvailabilityManager() {
           </div>
 
           {/* Time and Columns body */}
-          <div 
-            className="grid grid-cols-[80px_repeat(7,1fr)] relative" 
+          <div
+            className="grid grid-cols-[80px_repeat(7,1fr)] relative"
             style={{ height: `${TOTAL_HEIGHT}px` }}
             onMouseLeave={() => setIsSelecting(false)}
           >
@@ -794,11 +792,10 @@ export default function AvailabilityManager() {
                         top: `${selectStartMin}px`,
                         height: `${selectEndMin - selectStartMin}px`
                       }}
-                      className={`absolute w-[90%] left-0 z-0 rounded-lg border-2 border-dashed pointer-events-none animate-pulse ${
-                        formType === 'coach'
-                          ? 'bg-orange-500/20 border-orange-500/60 text-orange-400'
-                          : 'bg-blue-500/20 border-blue-500/60 text-blue-400'
-                      }`}
+                      className={`absolute w-[90%] left-0 z-0 rounded-lg border-2 border-dashed pointer-events-none animate-pulse ${formType === 'coach'
+                        ? 'bg-orange-500/20 border-orange-500/60 text-orange-400'
+                        : 'bg-blue-500/20 border-blue-500/60 text-blue-400'
+                        }`}
                     />
                   )}
 
@@ -813,7 +810,7 @@ export default function AvailabilityManager() {
                     // 1. Iterate coach events; find overlapping court events
                     coachEventsThisDay.forEach((coach) => {
                       const coachStart = new Date(coach.start_at).getTime()
-                      const coachEnd   = new Date(coach.end_at).getTime()
+                      const coachEnd = new Date(coach.end_at).getTime()
 
                       // Find all court events that overlap this coach block
                       const overlappingCourts = courtEventsThisDay.filter((court) => {
@@ -828,7 +825,7 @@ export default function AvailabilityManager() {
 
                         const pos = getEventPosition(coach.start_at, coach.end_at)
                         const dStart = new Date(coach.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                        const dEnd   = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
                         const courtNames = overlappingCourts.map(c => c.courts?.name).filter(Boolean).join(', ')
 
                         rendered.push(
@@ -840,18 +837,17 @@ export default function AvailabilityManager() {
                               handleOpenDetail({
                                 id: coach.id,
                                 type: 'coach',
-                                title: 'Coach JP + Court Open',
+                                title: 'Paul + Court Open',
                                 start: coach.start_at,
                                 end: coach.end_at,
                                 status: coach.status,
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-md hover:-translate-y-[1px] ${
-                              coach.status === 'booked'
-                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
-                                : 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 shadow-emerald-500/5'
-                            }`}
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow-md hover:-translate-y-[1px] ${coach.status === 'booked'
+                              ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                              : 'border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 shadow-emerald-500/5'
+                              }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-emerald-400 flex items-center gap-1">
@@ -872,7 +868,7 @@ export default function AvailabilityManager() {
                         // Standalone coach block — orange
                         const pos = getEventPosition(coach.start_at, coach.end_at)
                         const dStart = new Date(coach.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                        const dEnd   = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd = new Date(coach.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
 
                         rendered.push(
                           <div
@@ -882,18 +878,17 @@ export default function AvailabilityManager() {
                               handleOpenDetail({
                                 id: coach.id,
                                 type: 'coach',
-                                title: 'Coach JP Block',
+                                title: 'Paul Block',
                                 start: coach.start_at,
                                 end: coach.end_at,
                                 status: coach.status,
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${
-                              coach.status === 'booked'
-                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
-                                : 'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 shadow-orange-500/5'
-                            }`}
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${coach.status === 'booked'
+                              ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                              : 'border-orange-500/40 bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 shadow-orange-500/5'
+                              }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-orange-500">Coach Block</div>
@@ -911,7 +906,7 @@ export default function AvailabilityManager() {
                       .forEach((s) => {
                         const pos = getEventPosition(s.start_at, s.end_at)
                         const dStart = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                        const dEnd   = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                        const dEnd = new Date(s.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
 
                         rendered.push(
                           <div
@@ -930,11 +925,10 @@ export default function AvailabilityManager() {
                               })
                             }}
                             style={{ top: `${pos.top}px`, height: `${pos.height}px` }}
-                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${
-                              s.status === 'booked'
-                                ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
-                                : 'border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 shadow-blue-500/5'
-                            }`}
+                            className={`event-card absolute w-[90%] left-0 z-10 rounded-lg border p-2 text-[10px] flex flex-col justify-between transition-all cursor-pointer shadow hover:-translate-y-[1px] ${s.status === 'booked'
+                              ? 'border-zinc-550/30 bg-zinc-500/5 text-zinc-400 dark:border-zinc-800/30'
+                              : 'border-blue-500/40 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 shadow-blue-500/5'
+                              }`}
                           >
                             <div>
                               <div className="font-extrabold tracking-wide uppercase text-[8px] text-blue-500">Court Reserved</div>
@@ -949,7 +943,7 @@ export default function AvailabilityManager() {
                     bookingsThisDay.forEach((booking) => {
                       const pos = getEventPosition(booking.start_at, booking.end_at)
                       const dStart = new Date(booking.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
-                      const dEnd   = new Date(booking.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
+                      const dEnd = new Date(booking.end_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Manila' })
 
                       rendered.push(
                         <div
@@ -1011,7 +1005,7 @@ export default function AvailabilityManager() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
             <h3 className="text-lg font-bold mb-4">Add Availability Time Block</h3>
-            
+
             <form onSubmit={handleSaveAvailability} className="space-y-4">
               {/* Type Select */}
               <div>
@@ -1020,22 +1014,20 @@ export default function AvailabilityManager() {
                   <button
                     type="button"
                     onClick={() => setFormType('coach')}
-                    className={`rounded-lg py-2.5 text-xs font-bold uppercase transition ${
-                      formType === 'coach'
-                        ? 'bg-orange-500 text-black'
-                        : 'bg-zinc-50 border border-zinc-200 text-zinc-600 hover:text-zinc-900 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'
-                    }`}
+                    className={`rounded-lg py-2.5 text-xs font-bold uppercase transition ${formType === 'coach'
+                      ? 'bg-orange-500 text-black'
+                      : 'bg-zinc-50 border border-zinc-200 text-zinc-600 hover:text-zinc-900 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'
+                      }`}
                   >
-                    Coach JP Available
+                    Paul Available
                   </button>
                   <button
                     type="button"
                     onClick={() => setFormType('court')}
-                    className={`rounded-lg py-2.5 text-xs font-bold uppercase transition ${
-                      formType === 'court'
-                        ? 'bg-orange-500 text-black'
-                        : 'bg-zinc-50 border border-zinc-200 text-zinc-600 hover:text-zinc-900 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'
-                    }`}
+                    className={`rounded-lg py-2.5 text-xs font-bold uppercase transition ${formType === 'court'
+                      ? 'bg-orange-500 text-black'
+                      : 'bg-zinc-50 border border-zinc-200 text-zinc-600 hover:text-zinc-900 dark:bg-zinc-950 dark:border-zinc-800 dark:text-zinc-400 dark:hover:text-white'
+                      }`}
                   >
                     Court Rental Open
                   </button>
@@ -1122,7 +1114,7 @@ export default function AvailabilityManager() {
                         className="rounded border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 focus:ring-orange-500 h-4 w-4"
                       />
                       <span className="text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
-                        Also open Coach JP availability for this period
+                        Also open Paul availability for this period
                       </span>
                     </label>
                   </div>
@@ -1205,13 +1197,12 @@ export default function AvailabilityManager() {
           <div className="w-full max-w-sm rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 text-zinc-900 dark:text-white">
             <div className="flex justify-between items-start border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-4">
               <div>
-                <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded ${
-                  selectedEvent.type === 'booking'
-                    ? 'bg-red-500/10 text-red-500 border border-red-500/20'
-                    : selectedEvent.type === 'coach'
+                <span className={`text-[9px] uppercase font-black px-2 py-0.5 rounded ${selectedEvent.type === 'booking'
+                  ? 'bg-red-500/10 text-red-500 border border-red-500/20'
+                  : selectedEvent.type === 'coach'
                     ? 'bg-orange-500/10 text-orange-400'
                     : 'bg-blue-500/10 text-blue-400'
-                }`}>
+                  }`}>
                   {selectedEvent.type === 'booking' ? 'Active Booking' : selectedEvent.type === 'coach' ? 'Coach Availability' : 'Court Rental Open'}
                 </span>
                 <h3 className="text-base font-bold text-zinc-955 dark:text-white mt-2 leading-snug">{selectedEvent.title}</h3>
@@ -1269,13 +1260,12 @@ export default function AvailabilityManager() {
 
               <div>
                 <span className="text-zinc-500 dark:text-zinc-500 block text-[10px] uppercase font-semibold">Status</span>
-                <span className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase ${
-                  selectedEvent.status === 'available'
-                    ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                    : selectedEvent.status === 'booked' || selectedEvent.type === 'booking'
+                <span className={`mt-1.5 inline-block rounded-full px-2.5 py-0.5 text-[9px] font-bold uppercase ${selectedEvent.status === 'available'
+                  ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                  : selectedEvent.status === 'booked' || selectedEvent.type === 'booking'
                     ? 'bg-red-500/10 text-red-400 border border-red-500/20'
                     : 'bg-zinc-100 text-zinc-500 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-500 dark:border-zinc-700'
-                }`}>
+                  }`}>
                   {selectedEvent.status}
                 </span>
               </div>

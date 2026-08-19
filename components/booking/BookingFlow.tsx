@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Check } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/client'
@@ -182,14 +182,19 @@ export default function BookingFlow({
   const [error, setError] = useState<string | null>(null)
   const [bookingRef, setBookingRef] = useState<string | null>(null)
 
-  // Booking Category (session vs package purchase)
-  const [bookingType, setBookingType] = useState<'session' | 'package'>(() => {
+  // Booking Category (session vs package purchase) - defaults to package, updated in useEffect
+  const [bookingType, setBookingType] = useState<'session' | 'package'>('package')
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
-      return params.get('tab') === 'packages' ? 'package' : 'session'
+      if (params.get('service')) {
+        setBookingType('session')
+      } else if (params.get('tab') === 'sessions') {
+        setBookingType('session')
+      }
     }
-    return 'session'
-  })
+  }, [])
 
   // Date selection states for client timetable
   const isSameDay = (d1: Date, d2: Date) => {
@@ -609,7 +614,7 @@ export default function BookingFlow({
       console.error(err)
       setError(
         err?.message ||
-          'Failed to submit booking. The time slot may have just been taken. Please check and try again.'
+        'Failed to submit booking. The time slot may have just been taken. Please check and try again.'
       )
     } finally {
       setSubmitting(false)
@@ -668,21 +673,20 @@ export default function BookingFlow({
   // --------------------------------------------------------------------------
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8 text-zinc-900 dark:text-white relative z-10">
-      
+
       {/* Booking Type Switcher Toggle (Only show if not in success state) */}
       {!purchaseSuccess && currentStep < 4 && (
         <div className="mb-8 flex justify-center">
-          <div className="inline-flex rounded-xl bg-zinc-100 dark:bg-zinc-955 p-1 border border-zinc-200 dark:border-zinc-900">
+          <div className="inline-flex rounded-xl bg-zinc-150 dark:bg-zinc-900/90 p-1 border border-zinc-200 dark:border-zinc-800 shadow-inner">
             <button
               onClick={() => {
                 setBookingType('session')
                 setError(null)
               }}
-              className={`rounded-lg px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition ${
-                bookingType === 'session'
-                  ? 'bg-orange-500 text-black shadow-md shadow-orange-500/10'
-                  : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
-              }`}
+              className={`rounded-lg px-5 py-2.5 text-xs font-black uppercase tracking-wider transition duration-200 ${bookingType === 'session'
+                  ? 'bg-orange-500 text-black shadow-md shadow-orange-500/25'
+                  : 'text-zinc-550 dark:text-zinc-450 hover:text-zinc-900 dark:hover:text-white'
+                }`}
             >
               Book Session
             </button>
@@ -691,11 +695,10 @@ export default function BookingFlow({
                 setBookingType('package')
                 setError(null)
               }}
-              className={`rounded-lg px-5 py-2.5 text-xs font-bold uppercase tracking-wider transition ${
-                bookingType === 'package'
-                  ? 'bg-orange-500 text-black shadow-md shadow-orange-500/10'
-                  : 'text-zinc-500 hover:text-zinc-950 dark:hover:text-white'
-              }`}
+              className={`rounded-lg px-5 py-2.5 text-xs font-black uppercase tracking-wider transition duration-200 ${bookingType === 'package'
+                  ? 'bg-orange-500 text-black shadow-md shadow-orange-500/25'
+                  : 'text-zinc-550 dark:text-zinc-450 hover:text-zinc-950 dark:hover:text-white'
+                }`}
             >
               Buy Package
             </button>
@@ -767,15 +770,15 @@ export default function BookingFlow({
                           {pkg.name}
                         </h4>
                       </div>
-                      
+
                       {pkg.description && (
                         <p className="text-xs text-zinc-650 dark:text-zinc-400 leading-relaxed">
                           {pkg.description}
                         </p>
                       )}
 
-                      <div className="flex items-baseline pt-2 border-t border-zinc-100 dark:border-zinc-900">
-                        <span className="text-xs text-zinc-500 mr-2">Deal Price:</span>
+                      <div className="flex items-baseline pt-2 border-t border-zinc-100 dark:border-zinc-900 flex-wrap gap-1">
+                        <span className="text-xs text-zinc-550 mr-2">Deal Price:</span>
                         {pkg.original_price && (
                           <span className="text-xs text-zinc-400 line-through mr-2">
                             ₱{Number(pkg.original_price).toLocaleString()}
@@ -783,6 +786,9 @@ export default function BookingFlow({
                         )}
                         <span className="text-lg font-extrabold text-orange-500">
                           ₱{Number(pkg.price).toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-zinc-500 dark:text-zinc-500 font-bold ml-1.5 self-center">
+                          (Packaged to all sessions)
                         </span>
                       </div>
                     </div>
@@ -808,7 +814,7 @@ export default function BookingFlow({
                 <div>
                   <span className="text-[10px] uppercase font-bold tracking-wider text-orange-500">Selected Package</span>
                   <h4 className="text-sm font-bold text-zinc-900 dark:text-white mt-0.5">{selectedPackage.name}</h4>
-                  <p className="text-xs text-zinc-550 dark:text-zinc-400">{selectedPackage.number_of_sessions} Sessions · ₱{Number(selectedPackage.price).toLocaleString()}</p>
+                  <p className="text-xs text-zinc-550 dark:text-zinc-400">{selectedPackage.number_of_sessions} Sessions · ₱{Number(selectedPackage.price).toLocaleString()} (Packaged to all sessions)</p>
                 </div>
                 <button
                   type="button"
@@ -910,7 +916,7 @@ export default function BookingFlow({
                 <h4 className="text-sm font-bold uppercase tracking-wider text-orange-500 border-b border-zinc-150 dark:border-zinc-900 pb-1">
                   2. Make Payment
                 </h4>
-                
+
                 <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-6">
                   <h4 className="text-xs font-bold uppercase tracking-wider text-orange-500 mb-2">
                     Instructions
@@ -1029,1066 +1035,1056 @@ export default function BookingFlow({
       ) : (
         <>
           {/* STEP PROGRESS */}
-      <div className="mb-10">
-        {/* Mobile */}
-        <div className="block sm:hidden space-y-3">
-          <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-zinc-405">
-            <span>Step {currentStep + 1} of {STEPS.length}</span>
-            <span className="text-orange-500">{STEPS[currentStep]}</span>
-          </div>
-          <div className="w-full bg-zinc-950 rounded-full h-2 border border-zinc-900 overflow-hidden">
-            <div
-              className="bg-orange-500 h-full rounded-full transition-all duration-300 shadow-md shadow-orange-500/20"
-              style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Desktop */}
-        <div className="hidden sm:flex items-center justify-between">
-          {STEPS.map((step, idx) => (
-            <div key={step} className="flex flex-1 items-center last:flex-initial">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold uppercase transition duration-200 ${
-                    idx <= currentStep
-                      ? 'border-orange-500 bg-orange-500 text-black shadow-lg shadow-orange-500/20'
-                      : 'border-zinc-200 bg-zinc-100 text-zinc-450 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500'
-                  }`}
-                >
-                  {idx + 1}
-                </div>
-                <span
-                  className={`mt-2 text-xs font-semibold uppercase tracking-wider hidden sm:block ${
-                    idx <= currentStep ? 'text-orange-500' : 'text-zinc-500'
-                  }`}
-                >
-                  {step}
-                </span>
+          <div className="mb-10">
+            {/* Mobile */}
+            <div className="block sm:hidden space-y-3">
+              <div className="flex justify-between items-center text-xs font-bold uppercase tracking-wider text-zinc-405">
+                <span>Step {currentStep + 1} of {STEPS.length}</span>
+                <span className="text-orange-500">{STEPS[currentStep]}</span>
               </div>
-              {idx < STEPS.length - 1 && (
+              <div className="w-full bg-zinc-950 rounded-full h-2 border border-zinc-900 overflow-hidden">
                 <div
-                  className={`mx-2 h-0.5 flex-1 transition duration-200 ${
-                    idx < currentStep ? 'bg-orange-500' : 'bg-zinc-200 dark:bg-zinc-800'
-                  }`}
+                  className="bg-orange-500 h-full rounded-full transition-all duration-300 shadow-md shadow-orange-500/20"
+                  style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
                 />
-              )}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* ERROR */}
-      {error && (
-        <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
-          {error}
-        </div>
-      )}
-
-      {/* STEP BODY */}
-      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl transition-colors duration-200">
-
-        {/* ================================================================
-            STEP 1: SERVICE SELECTION
-        ================================================================ */}
-        {currentStep === 0 && (
-          <div>
-            <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Select Training Program</h2>
-            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Choose your basketball training service structure.</p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <div
-                  key={service.id}
-                  onClick={() => {
-                    setSelectedService(service)
-                    setSelectedSlot(null)
-                  }}
-                  className={`cursor-pointer flex flex-col justify-between p-6 rounded-xl border-2 transition duration-200 ${
-                    selectedService?.id === service.id
-                      ? 'border-orange-500 bg-orange-500/5'
-                      : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
-                  }`}
-                >
-                  <div>
-                    <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{service.name}</h3>
-                    <p className="mt-2 text-xs text-zinc-555 dark:text-zinc-400 leading-relaxed">{service.description}</p>
-                  </div>
-                  <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-900 flex justify-between items-baseline">
-                    <div className="flex items-baseline gap-1.5">
-                      {service.original_price && (
-                        <span className="text-xs text-zinc-400 dark:text-zinc-500 line-through font-semibold">
-                          ₱{Number(service.original_price).toLocaleString()}
-                        </span>
-                      )}
-                      <span className="text-lg font-black text-orange-500">
-                        ₱{Number(service.price).toLocaleString()}
-                      </span>
+            {/* Desktop */}
+            <div className="hidden sm:flex items-center justify-between">
+              {STEPS.map((step, idx) => (
+                <div key={step} className="flex flex-1 items-center last:flex-initial">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-xl border text-sm font-bold uppercase transition duration-200 ${idx <= currentStep
+                          ? 'border-orange-500 bg-orange-500 text-black shadow-lg shadow-orange-500/20'
+                          : 'border-zinc-200 bg-zinc-100 text-zinc-450 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-500'
+                        }`}
+                    >
+                      {idx + 1}
                     </div>
-                    <span className="text-xs text-zinc-500 dark:text-zinc-400">{service.duration_minutes} Mins</span>
+                    <span
+                      className={`mt-2 text-xs font-semibold uppercase tracking-wider hidden sm:block ${idx <= currentStep ? 'text-orange-500' : 'text-zinc-500'
+                        }`}
+                    >
+                      {step}
+                    </span>
                   </div>
+                  {idx < STEPS.length - 1 && (
+                    <div
+                      className={`mx-2 h-0.5 flex-1 transition duration-200 ${idx < currentStep ? 'bg-orange-500' : 'bg-zinc-200 dark:bg-zinc-800'
+                        }`}
+                    />
+                  )}
                 </div>
               ))}
             </div>
-
-            <div className="mt-8 flex justify-end">
-              <button
-                onClick={nextStep}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition"
-              >
-                Continue to Schedule
-              </button>
-            </div>
           </div>
-        )}
 
-        {/* ================================================================
-            STEP 2: SCHEDULE — 3-MODE SLOT PICKER
+          {/* ERROR */}
+          {error && (
+            <div className="mb-6 rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400">
+              {error}
+            </div>
+          )}
+
+          {/* STEP BODY */}
+          <div className="rounded-2xl border border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-900/60 p-6 md:p-8 backdrop-blur-xl shadow-2xl transition-colors duration-200">
+
+            {/* ================================================================
+            STEP 1: SERVICE SELECTION
         ================================================================ */}
-        {currentStep === 1 && (
-          <div>
-            <h2 className="text-xl font-bold mb-1 text-zinc-955 dark:text-white">Select Date &amp; Time</h2>
-            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-5">
-              Pick your booking type and choose a slot for{' '}
-              <span className="text-orange-500 font-semibold">{selectedService?.name}</span>.
-            </p>
+            {currentStep === 0 && (
+              <div>
+                <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Select Training Program</h2>
+                <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Choose your basketball training service structure.</p>
 
-            {/* Mode toggle pills */}
-            <div className="flex flex-wrap gap-2 mb-6">
-              {(['combined', 'coach_only', 'court_only'] as SlotMode[]).map((mode) => {
-                const meta = MODE_META[mode]
-                const count = slotsByMode[mode].length
-                const isActive = activeMode === mode
-                return (
-                  <button
-                    key={mode}
-                    onClick={() => {
-                      setActiveMode(mode)
-                      setSelectedSlot(null)
-                      const firstSlot = slotsByMode[mode]?.[0]
-                      if (firstSlot) {
-                        const slotDate = new Date(firstSlot.start_at)
-                        setSelectedDate(slotDate)
-                        setDateStripStart(slotDate)
-                      }
-                    }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all ${
-                      isActive
-                        ? `${meta.border} ${meta.bg} ${meta.color} shadow-md`
-                        : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 text-zinc-500 hover:border-zinc-305 dark:hover:border-zinc-700'
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
-                    {meta.badgeLabel}
-                    <span
-                      className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-black ${
-                        isActive ? 'bg-black/10 dark:bg-white/10' : 'bg-zinc-205'
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Mode description banner */}
-            <div
-              className={`mb-5 rounded-lg border p-3 text-xs leading-relaxed ${MODE_META[activeMode].border} ${MODE_META[activeMode].bg} ${MODE_META[activeMode].color}`}
-            >
-              {activeMode === 'combined' && (
-                <>
-                  <span className="font-bold">Coach + Court</span> — Coach JP is available <em>and</em> a court is open at the same time. You pay both the coaching fee and court rental.
-                </>
-              )}
-              {activeMode === 'coach_only' && (
-                <>
-                  <span className="font-bold">Coach Only</span> — Book a session with Coach JP without renting a court. You pay the coaching fee only. You are responsible for your own court arrangement.
-                </>
-              )}
-              {activeMode === 'court_only' && (
-                <>
-                  <span className="font-bold">Court Only</span> — Rent the court without a coaching session. You pay the court rental fee only. No coaching is included.
-                </>
-              )}
-            </div>
-
-            {/* Scrollable Horizontal Date Strip */}
-            {slotsByMode[activeMode].length > 0 && (
-              <div className="mb-6">
-                <label className="block text-xs font-bold uppercase tracking-wider text-zinc-550 dark:text-zinc-400 mb-2">
-                  Choose Booking Date
-                </label>
-                <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
-                  {/* Calendar Input Picker (Full Calendar View) */}
-                  <div className="relative shrink-0 min-w-[200px]">
-                    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 text-sm">
-                      📅
-                    </div>
-                    <input
-                      type="date"
-                      value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`}
-                      min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          const parts = e.target.value.split('-')
-                          const newD = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
-                          setSelectedDate(newD)
-                          setSelectedSlot(null)
-                          setDateStripStart(newD)
-                        }
-                      }}
-                      className="w-full rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 pl-9 pr-4 py-2.5 text-xs font-bold uppercase tracking-wider outline-none focus:border-orange-500 transition cursor-pointer text-zinc-800 dark:text-zinc-200"
-                    />
-                  </div>
-
-                  {/* Scrollable Quick Selection Strip Flanked by Pagination Arrows */}
-                  <div className="flex-1 flex items-center gap-1.5 min-w-0">
-                    <button
-                      type="button"
-                      disabled={isSameDay(dateStripStart, new Date()) || dateStripStart < new Date()}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {services.map((service) => (
+                    <div
+                      key={service.id}
                       onClick={() => {
-                        const today = new Date()
-                        today.setHours(0, 0, 0, 0)
-                        const prev = new Date(dateStripStart)
-                        prev.setDate(prev.getDate() - 7)
-                        setDateStripStart(prev < today ? today : prev)
+                        setSelectedService(service)
+                        setSelectedSlot(null)
                       }}
-                      className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-500 font-bold hover:border-orange-500/40 disabled:opacity-30 disabled:hover:border-zinc-200 transition shrink-0"
-                      title="Previous Week"
+                      className={`cursor-pointer flex flex-col justify-between p-6 rounded-xl border-2 transition duration-200 ${selectedService?.id === service.id
+                          ? 'border-orange-500 bg-orange-500/5'
+                          : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
+                        }`}
                     >
-                      ←
-                    </button>
-
-                    <div className="flex-1 overflow-x-auto scrollbar-none pb-0.5">
-                      <div className="flex gap-1.5 whitespace-nowrap">
-                        {quickDays.map((d, idx) => {
-                          const isSelected = isSameDay(d, selectedDate)
-                          const hasSlots = datesWithSlots.has(d.toDateString())
-                          const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
-                          const dayNum = d.getDate()
-
-                          return (
-                            <button
-                              key={idx}
-                              type="button"
-                              onClick={() => {
-                                setSelectedDate(d)
-                                setSelectedSlot(null)
-                              }}
-                              className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border-2 text-[11px] font-bold uppercase tracking-wider transition ${
-                                isSelected
-                                  ? 'border-orange-500 bg-orange-500/10 text-orange-500'
-                                  : 'border-zinc-250 dark:border-zinc-905 bg-white dark:bg-zinc-955 text-zinc-550 dark:text-zinc-400 hover:border-zinc-305 dark:hover:border-zinc-800'
-                              }`}
-                            >
-                              <span>{dayName} {dayNum}</span>
-                              {hasSlots && (
-                                <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
-                              )}
-                            </button>
-                          )
-                        })}
+                      <div>
+                        <h3 className="text-lg font-bold text-zinc-900 dark:text-white">{service.name}</h3>
+                        <p className="mt-2 text-xs text-zinc-555 dark:text-zinc-400 leading-relaxed">{service.description}</p>
+                      </div>
+                      <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-900 flex justify-between items-baseline">
+                        <div className="flex items-baseline gap-1.5">
+                          {service.original_price && (
+                            <span className="text-xs text-zinc-400 dark:text-zinc-500 line-through font-semibold">
+                              ₱{Number(service.original_price).toLocaleString()}
+                            </span>
+                          )}
+                          <span className="text-lg font-black text-orange-500">
+                            ₱{Number(service.price).toLocaleString()}
+                          </span>
+                        </div>
+                        <span className="text-xs text-zinc-500 dark:text-zinc-400">{service.duration_minutes} Mins</span>
                       </div>
                     </div>
+                  ))}
+                </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const next = new Date(dateStripStart)
-                        next.setDate(next.getDate() + 7)
-                        setDateStripStart(next)
-                      }}
-                      className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-550 font-bold hover:border-orange-500/40 transition shrink-0"
-                      title="Next Week"
-                    >
-                      →
-                    </button>
-                  </div>
+                <div className="mt-8 flex justify-end">
+                  <button
+                    onClick={nextStep}
+                    className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition"
+                  >
+                    Continue to Schedule
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Timetable Grid or Empty State */}
-            {slotsByMode[activeMode].length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/40">
-                <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available</h3>
-                <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto">
-                  No {MODE_META[activeMode].badgeLabel.toLowerCase()} slots are scheduled for this program duration. Try a different mode or check back later.
+            {/* ================================================================
+            STEP 2: SCHEDULE — 3-MODE SLOT PICKER
+        ================================================================ */}
+            {currentStep === 1 && (
+              <div>
+                <h2 className="text-xl font-bold mb-1 text-zinc-955 dark:text-white">Select Date &amp; Time</h2>
+                <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-5">
+                  Pick your booking type and choose a slot for{' '}
+                  <span className="text-orange-500 font-semibold">{selectedService?.name}</span>.
                 </p>
-              </div>
-            ) : slotsOnDate.length === 0 ? (
-              <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-805 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/20 px-4">
-                <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available for this Date</h3>
-                <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto mb-4">
-                  There are no scheduled training sessions on this day. Please select a date highlighted with an orange dot indicator.
-                </p>
-                {availableDatesForMode.length > 0 && (
-                  <div className="pt-4 border-t border-zinc-200 dark:border-zinc-900 max-w-md mx-auto">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">
-                      📅 Available dates for {MODE_META[activeMode].badgeLabel}:
-                    </p>
-                    <div className="flex flex-wrap gap-1.5 justify-center">
-                      {availableDatesForMode.map((isoDate) => {
-                        const d = new Date(isoDate)
-                        const formatted = d.toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          weekday: 'short',
-                          timeZone: 'Asia/Manila',
-                        })
-                        return (
-                          <button
-                            key={isoDate}
-                            type="button"
-                            onClick={() => {
-                              setSelectedDate(d)
-                              setSelectedSlot(null)
-                              setDateStripStart(d)
-                            }}
-                            className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-zinc-250 bg-white hover:border-orange-500 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 hover:bg-orange-500 hover:text-black transition"
-                          >
-                            {formatted}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Mobile View: Scrollable list of available slots (visible on small screens only) */}
-                <div className="block sm:hidden space-y-3 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
-                  {slotsOnDate.sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()).map((slot, idx) => {
-                    const isSelected =
-                      selectedSlot?.start_at === slot.start_at &&
-                      selectedSlot?.coach_availability_id === slot.coach_availability_id &&
-                      selectedSlot?.court_availability_id === slot.court_availability_id
 
-                    const startTime = formatSlotTime(slot.start_at)
-                    const endTime = formatSlotTime(slot.end_at)
-                    const meta = MODE_META[slot.mode]
-
+                {/* Mode toggle pills */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {(['combined', 'coach_only', 'court_only'] as SlotMode[]).map((mode) => {
+                    const meta = MODE_META[mode]
+                    const count = slotsByMode[mode].length
+                    const isActive = activeMode === mode
                     return (
                       <button
-                        key={idx}
-                        type="button"
-                        onClick={() => setSelectedSlot(slot)}
-                        className={`w-full text-left rounded-2xl border-2 p-4 transition duration-200 flex items-center justify-between gap-4 ${
-                          isSelected
-                            ? `${meta.border} ${meta.bg} shadow-md`
-                            : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
-                        }`}
+                        key={mode}
+                        onClick={() => {
+                          setActiveMode(mode)
+                          setSelectedSlot(null)
+                          const firstSlot = slotsByMode[mode]?.[0]
+                          if (firstSlot) {
+                            const slotDate = new Date(firstSlot.start_at)
+                            setSelectedDate(slotDate)
+                            setDateStripStart(slotDate)
+                          }
+                        }}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider transition-all ${isActive
+                            ? `${meta.border} ${meta.bg} ${meta.color} shadow-md`
+                            : 'border-zinc-200 bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-955 text-zinc-500 hover:border-zinc-305 dark:hover:border-zinc-700'
+                          }`}
                       >
-                        <div className="flex-1 min-w-0">
-                          {/* Mode Badge */}
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
-                            <span className={`text-[9px] uppercase font-black tracking-wider ${meta.badgeText}`}>
-                              {slot.mode === 'combined' ? 'Coach + Court' : slot.mode === 'coach_only' ? 'Coach Only' : 'Court Only'}
-                            </span>
-                          </div>
-
-                          {/* Time Interval */}
-                          <div className="text-sm font-extrabold text-zinc-950 dark:text-white leading-tight">
-                            {startTime} – {endTime}
-                          </div>
-
-                          {/* Coach / Court Details */}
-                          {slot.courtName && (
-                            <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-1 truncate font-semibold">
-                              🏀 {slot.courtName}
-                            </div>
-                          )}
-                          {slot.coachName && (
-                            <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5 truncate font-semibold">
-                              👤 {slot.coachName}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="text-right flex flex-col items-end gap-1.5">
-                          <div className="text-sm font-black text-orange-500">
-                            ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
-                          </div>
-
-                          {/* Map Toggle Link */}
-                          {slot.courtName && (
-                            <span
-                              role="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setMapModalCourt({
-                                  name: slot.courtName || 'Court',
-                                  location: slot.courtLocation || '',
-                                  latitude: slot.latitude || 10.3157,
-                                  longitude: slot.longitude || 123.8854,
-                                })
-                              }}
-                              className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
-                            >
-                              🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
-                            </span>
-                          )}
-                        </div>
+                        <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
+                        {meta.badgeLabel}
+                        <span
+                          className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-black ${isActive ? 'bg-black/10 dark:bg-white/10' : 'bg-zinc-205'
+                            }`}
+                        >
+                          {count}
+                        </span>
                       </button>
                     )
                   })}
                 </div>
 
-                {/* Desktop View: Horizontal timetable grid (visible on larger screens only) */}
-                <div className="hidden sm:block overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl bg-zinc-50/30 dark:bg-zinc-955/10 max-h-[460px] scrollbar-thin">
-                  <div className="min-w-[680px] p-4">
-                    {/* Table headers */}
-                    <div
-                      className="grid gap-2 border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-2 text-center text-xs font-bold uppercase tracking-wider text-zinc-500"
-                      style={{
-                        gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
-                      }}
-                    >
-                      <div className="text-left pl-2">Time</div>
-                      {activeMode === 'coach_only' ? (
-                        <div className="text-center">Available Coach Slots</div>
-                      ) : (
-                        courts.map((court) => (
-                          <div key={court.id} className="text-center truncate flex items-center justify-center gap-1.5 pl-2">
-                            <span>🏀 {court.name}</span>
-                            <span
-                              role="button"
-                              onClick={() => {
-                                setMapModalCourt({
-                                  name: court.name,
-                                  location: court.location || '',
-                                  latitude: court.latitude || 10.3157,
-                                  longitude: court.longitude || 123.8854,
-                                })
-                              }}
-                              className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
-                              title="View Venue Map"
-                            >
-                              🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
-                            </span>
+                {/* Mode description banner */}
+                <div
+                  className={`mb-5 rounded-lg border p-3 text-xs leading-relaxed ${MODE_META[activeMode].border} ${MODE_META[activeMode].bg} ${MODE_META[activeMode].color}`}
+                >
+                  {activeMode === 'combined' && (
+                    <>
+                      <span className="font-bold">Coach + Court</span> — Paul is available <em>and</em> a court is open at the same time. You pay both the coaching fee and court rental.
+                    </>
+                  )}
+                  {activeMode === 'coach_only' && (
+                    <>
+                      <span className="font-bold">Coach Only</span> — Book a session with Paul without renting a court. You pay the coaching fee only. You are responsible for your own court arrangement.
+                    </>
+                  )}
+                  {activeMode === 'court_only' && (
+                    <>
+                      <span className="font-bold">Court Only</span> — Rent the court without a coaching session. You pay the court rental fee only. No coaching is included.
+                    </>
+                  )}
+                </div>
+
+                {/* Scrollable Horizontal Date Strip */}
+                {slotsByMode[activeMode].length > 0 && (
+                  <div className="mb-6">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-zinc-550 dark:text-zinc-400 mb-2">
+                      Choose Booking Date
+                    </label>
+                    <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+                      {/* Calendar Input Picker (Full Calendar View) */}
+                      <div className="relative shrink-0 min-w-[200px]">
+                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-zinc-400 dark:text-zinc-500 text-sm">
+                          📅
+                        </div>
+                        <input
+                          type="date"
+                          value={`${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`}
+                          min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-${String(new Date().getDate()).padStart(2, '0')}`}
+                          onChange={(e) => {
+                            if (e.target.value) {
+                              const parts = e.target.value.split('-')
+                              const newD = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+                              setSelectedDate(newD)
+                              setSelectedSlot(null)
+                              setDateStripStart(newD)
+                            }
+                          }}
+                          className="w-full rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 pl-9 pr-4 py-2.5 text-xs font-bold uppercase tracking-wider outline-none focus:border-orange-500 transition cursor-pointer text-zinc-800 dark:text-zinc-200"
+                        />
+                      </div>
+
+                      {/* Scrollable Quick Selection Strip Flanked by Pagination Arrows */}
+                      <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                        <button
+                          type="button"
+                          disabled={isSameDay(dateStripStart, new Date()) || dateStripStart < new Date()}
+                          onClick={() => {
+                            const today = new Date()
+                            today.setHours(0, 0, 0, 0)
+                            const prev = new Date(dateStripStart)
+                            prev.setDate(prev.getDate() - 7)
+                            setDateStripStart(prev < today ? today : prev)
+                          }}
+                          className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-500 font-bold hover:border-orange-500/40 disabled:opacity-30 disabled:hover:border-zinc-200 transition shrink-0"
+                          title="Previous Week"
+                        >
+                          ←
+                        </button>
+
+                        <div className="flex-1 overflow-x-auto scrollbar-none pb-0.5">
+                          <div className="flex gap-1.5 whitespace-nowrap">
+                            {quickDays.map((d, idx) => {
+                              const isSelected = isSameDay(d, selectedDate)
+                              const hasSlots = datesWithSlots.has(d.toDateString())
+                              const dayName = d.toLocaleDateString('en-US', { weekday: 'short' })
+                              const dayNum = d.getDate()
+
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedDate(d)
+                                    setSelectedSlot(null)
+                                  }}
+                                  className={`flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border-2 text-[11px] font-bold uppercase tracking-wider transition ${isSelected
+                                      ? 'border-orange-500 bg-orange-500/10 text-orange-500'
+                                      : 'border-zinc-250 dark:border-zinc-905 bg-white dark:bg-zinc-955 text-zinc-550 dark:text-zinc-400 hover:border-zinc-305 dark:hover:border-zinc-800'
+                                    }`}
+                                >
+                                  <span>{dayName} {dayNum}</span>
+                                  {hasSlots && (
+                                    <span className="h-1.5 w-1.5 rounded-full bg-orange-500 animate-pulse" />
+                                  )}
+                                </button>
+                              )
+                            })}
                           </div>
-                        ))
-                      )}
-                    </div>
+                        </div>
 
-                    {/* Table hours rows */}
-                    <div className="space-y-1.5">
-                      {(() => {
-                        const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
-                        return HOURS.map((hour) => {
-                          const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
-                          const ampm = hour >= 12 ? 'PM' : 'AM'
-                          const timeLabel = `${displayHour}:00 ${ampm}`
-
-                          return (
-                            <div
-                              key={hour}
-                              className="grid gap-2 items-center text-center py-1 border-b border-zinc-100/50 dark:border-zinc-900/30 last:border-b-0"
-                              style={{
-                                gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
-                              }}
-                            >
-                              {/* Hour label */}
-                              <div className="text-left text-[11px] font-bold text-zinc-400 dark:text-zinc-500 pl-2">
-                                {timeLabel}
-                              </div>
-
-                              {/* Slot cell containers */}
-                              {activeMode === 'coach_only' ? (
-                                (() => {
-                                  const cellSlots = slotsOnDate.filter((s) => new Date(s.start_at).getHours() === hour)
-                                  return (
-                                    <div className="flex flex-col gap-1.5 justify-center items-center min-h-[48px]">
-                                      {cellSlots.length > 0 ? (
-                                        cellSlots.map((slot, sIdx) => {
-                                          const isSelected =
-                                            selectedSlot?.start_at === slot.start_at &&
-                                            selectedSlot?.coach_availability_id === slot.coach_availability_id
-
-                                          return (
-                                            <button
-                                              key={sIdx}
-                                              type="button"
-                                              onClick={() => setSelectedSlot(slot)}
-                                              className={`w-full max-w-sm rounded-xl border-2 p-2.5 text-xs transition duration-200 ${
-                                                isSelected
-                                                  ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold shadow-md shadow-orange-500/5'
-                                                  : 'border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
-                                              }`}
-                                            >
-                                              <div className="font-extrabold">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
-                                              <div className="text-[10px] text-zinc-500 dark:text-zinc-500 font-semibold mt-0.5">
-                                                ₱{Number(slot.trainingFee).toLocaleString()}
-                                              </div>
-                                            </button>
-                                          )
-                                        })
-                                      ) : (
-                                        <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
-                                      )}
-                                    </div>
-                                  )
-                                })()
-                              ) : (
-                                courts.map((court) => {
-                                  const cellSlots = slotsOnDate.filter((s) => {
-                                    const d = new Date(s.start_at)
-                                    return d.getHours() === hour && s.court_id === court.id
-                                  })
-
-                                  return (
-                                    <div key={court.id} className="flex flex-col gap-1.5 justify-center items-center min-h-[48px] border-l border-zinc-200/40 dark:border-zinc-900/20 first:border-l-0">
-                                      {cellSlots.length > 0 ? (
-                                        cellSlots.map((slot, sIdx) => {
-                                          const isSelected =
-                                            selectedSlot?.start_at === slot.start_at &&
-                                            selectedSlot?.coach_availability_id === slot.coach_availability_id &&
-                                            selectedSlot?.court_availability_id === slot.court_availability_id
-
-                                          const meta = MODE_META[slot.mode]
-
-                                          return (
-                                            <button
-                                              key={sIdx}
-                                              type="button"
-                                              onClick={() => setSelectedSlot(slot)}
-                                              className={`w-full max-w-[180px] rounded-xl border-2 p-2 text-xs transition duration-200 ${
-                                                isSelected
-                                                  ? `${meta.border} ${meta.bg} ${meta.color} font-bold shadow-md`
-                                                  : `border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30`
-                                              }`}
-                                            >
-                                              <div className="font-extrabold leading-tight">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
-                                              <div className="text-[10px] font-semibold mt-0.5 opacity-90">
-                                                ₱{(slot.trainingFee + slot.courtFee).toLocaleString()}
-                                              </div>
-                                            </button>
-                                          )
-                                        })
-                                      ) : (
-                                        <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
-                                      )}
-                                    </div>
-                                  )
-                                })
-                              )}
-                            </div>
-                          )
-                        })
-                      })()}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const next = new Date(dateStripStart)
+                            next.setDate(next.getDate() + 7)
+                            setDateStripStart(next)
+                          }}
+                          className="px-3 py-2.5 rounded-xl border-2 border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-955 text-zinc-550 font-bold hover:border-orange-500/40 transition shrink-0"
+                          title="Next Week"
+                        >
+                          →
+                        </button>
+                      </div>
                     </div>
                   </div>
+                )}
+
+                {/* Timetable Grid or Empty State */}
+                {slotsByMode[activeMode].length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/40">
+                    <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available</h3>
+                    <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto">
+                      No {MODE_META[activeMode].badgeLabel.toLowerCase()} slots are scheduled for this program duration. Try a different mode or check back later.
+                    </p>
+                  </div>
+                ) : slotsOnDate.length === 0 ? (
+                  <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-805 rounded-xl bg-zinc-50/50 dark:bg-zinc-955/20 px-4">
+                    <svg className="mx-auto h-10 w-10 text-zinc-400 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <h3 className="mt-4 text-sm font-bold text-zinc-550 dark:text-zinc-400">No Slots Available for this Date</h3>
+                    <p className="mt-1 text-xs text-zinc-455 dark:text-zinc-500 max-w-xs mx-auto mb-4">
+                      There are no scheduled training sessions on this day. Please select a date highlighted with an orange dot indicator.
+                    </p>
+                    {availableDatesForMode.length > 0 && (
+                      <div className="pt-4 border-t border-zinc-200 dark:border-zinc-900 max-w-md mx-auto">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 mb-2.5">
+                          📅 Available dates for {MODE_META[activeMode].badgeLabel}:
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 justify-center">
+                          {availableDatesForMode.map((isoDate) => {
+                            const d = new Date(isoDate)
+                            const formatted = d.toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              weekday: 'short',
+                              timeZone: 'Asia/Manila',
+                            })
+                            return (
+                              <button
+                                key={isoDate}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedDate(d)
+                                  setSelectedSlot(null)
+                                  setDateStripStart(d)
+                                }}
+                                className="px-2.5 py-1 text-[11px] font-bold rounded-lg border border-zinc-250 bg-white hover:border-orange-500 dark:border-zinc-800 dark:bg-zinc-950 text-orange-500 hover:bg-orange-500 hover:text-black transition"
+                              >
+                                {formatted}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {/* Mobile View: Scrollable list of available slots (visible on small screens only) */}
+                    <div className="block sm:hidden space-y-3 max-h-[460px] overflow-y-auto pr-1 scrollbar-thin">
+                      {slotsOnDate.sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime()).map((slot, idx) => {
+                        const isSelected =
+                          selectedSlot?.start_at === slot.start_at &&
+                          selectedSlot?.coach_availability_id === slot.coach_availability_id &&
+                          selectedSlot?.court_availability_id === slot.court_availability_id
+
+                        const startTime = formatSlotTime(slot.start_at)
+                        const endTime = formatSlotTime(slot.end_at)
+                        const meta = MODE_META[slot.mode]
+
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setSelectedSlot(slot)}
+                            className={`w-full text-left rounded-2xl border-2 p-4 transition duration-200 flex items-center justify-between gap-4 ${isSelected
+                                ? `${meta.border} ${meta.bg} shadow-md`
+                                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
+                              }`}
+                          >
+                            <div className="flex-1 min-w-0">
+                              {/* Mode Badge */}
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className={`inline-block w-1.5 h-1.5 rounded-full ${meta.dot}`} />
+                                <span className={`text-[9px] uppercase font-black tracking-wider ${meta.badgeText}`}>
+                                  {slot.mode === 'combined' ? 'Coach + Court' : slot.mode === 'coach_only' ? 'Coach Only' : 'Court Only'}
+                                </span>
+                              </div>
+
+                              {/* Time Interval */}
+                              <div className="text-sm font-extrabold text-zinc-950 dark:text-white leading-tight">
+                                {startTime} – {endTime}
+                              </div>
+
+                              {/* Coach / Court Details */}
+                              {slot.courtName && (
+                                <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-1 truncate font-semibold">
+                                  🏀 {slot.courtName}
+                                </div>
+                              )}
+                              {slot.coachName && (
+                                <div className="text-xs text-zinc-550 dark:text-zinc-450 mt-0.5 truncate font-semibold">
+                                  👤 {slot.coachName}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="text-right flex flex-col items-end gap-1.5">
+                              <div className="text-sm font-black text-orange-500">
+                                ₱{(slot.trainingFee + slot.courtFee).toLocaleString()} per session
+                              </div>
+
+                              {/* Map Toggle Link */}
+                              {slot.courtName && (
+                                <span
+                                  role="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setMapModalCourt({
+                                      name: slot.courtName || 'Court',
+                                      location: slot.courtLocation || '',
+                                      latitude: slot.latitude || 10.3157,
+                                      longitude: slot.longitude || 123.8854,
+                                    })
+                                  }}
+                                  className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
+                                >
+                                  🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
+                                </span>
+                              )}
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+
+                    {/* Desktop View: Horizontal timetable grid (visible on larger screens only) */}
+                    <div className="hidden sm:block overflow-x-auto border border-zinc-200 dark:border-zinc-900 rounded-2xl bg-zinc-50/30 dark:bg-zinc-955/10 max-h-[460px] scrollbar-thin">
+                      <div className="min-w-[680px] p-4">
+                        {/* Table headers */}
+                        <div
+                          className="grid gap-2 border-b border-zinc-200 dark:border-zinc-900 pb-3 mb-2 text-center text-xs font-bold uppercase tracking-wider text-zinc-500"
+                          style={{
+                            gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                          }}
+                        >
+                          <div className="text-left pl-2">Time</div>
+                          {activeMode === 'coach_only' ? (
+                            <div className="text-center">Available Coach Slots</div>
+                          ) : (
+                            courts.map((court) => (
+                              <div key={court.id} className="text-center truncate flex items-center justify-center gap-1.5 pl-2">
+                                <span>🏀 {court.name}</span>
+                                <span
+                                  role="button"
+                                  onClick={() => {
+                                    setMapModalCourt({
+                                      name: court.name,
+                                      location: court.location || '',
+                                      latitude: court.latitude || 10.3157,
+                                      longitude: court.longitude || 123.8854,
+                                    })
+                                  }}
+                                  className="text-[10px] text-orange-500 hover:text-orange-400 hover:underline cursor-pointer font-bold inline-flex items-center gap-0.5"
+                                  title="View Venue Map"
+                                >
+                                  🗺️ <span className="text-[9px] font-semibold text-zinc-500 hover:text-orange-400">(Map)</span>
+                                </span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+
+                        {/* Table hours rows */}
+                        <div className="space-y-1.5">
+                          {(() => {
+                            const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21]
+                            return HOURS.map((hour) => {
+                              const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour
+                              const ampm = hour >= 12 ? 'PM' : 'AM'
+                              const timeLabel = `${displayHour}:00 ${ampm}`
+
+                              return (
+                                <div
+                                  key={hour}
+                                  className="grid gap-2 items-center text-center py-1 border-b border-zinc-100/50 dark:border-zinc-900/30 last:border-b-0"
+                                  style={{
+                                    gridTemplateColumns: `80px repeat(${activeMode === 'coach_only' ? 1 : courts.length}, 1fr)`,
+                                  }}
+                                >
+                                  {/* Hour label */}
+                                  <div className="text-left text-[11px] font-bold text-zinc-400 dark:text-zinc-500 pl-2">
+                                    {timeLabel}
+                                  </div>
+
+                                  {/* Slot cell containers */}
+                                  {activeMode === 'coach_only' ? (
+                                    (() => {
+                                      const cellSlots = slotsOnDate.filter((s) => new Date(s.start_at).getHours() === hour)
+                                      return (
+                                        <div className="flex flex-col gap-1.5 justify-center items-center min-h-[48px]">
+                                          {cellSlots.length > 0 ? (
+                                            cellSlots.map((slot, sIdx) => {
+                                              const isSelected =
+                                                selectedSlot?.start_at === slot.start_at &&
+                                                selectedSlot?.coach_availability_id === slot.coach_availability_id
+
+                                              return (
+                                                <button
+                                                  key={sIdx}
+                                                  type="button"
+                                                  onClick={() => setSelectedSlot(slot)}
+                                                  className={`w-full max-w-sm rounded-xl border-2 p-2.5 text-xs transition duration-200 ${isSelected
+                                                      ? 'border-orange-500 bg-orange-500/10 text-orange-500 font-bold shadow-md shadow-orange-500/5'
+                                                      : 'border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30'
+                                                    }`}
+                                                >
+                                                  <div className="font-extrabold">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                                  <div className="text-[10px] text-zinc-500 dark:text-zinc-500 font-semibold mt-0.5">
+                                                    ₱{Number(slot.trainingFee).toLocaleString()} per session
+                                                  </div>
+                                                </button>
+                                              )
+                                            })
+                                          ) : (
+                                            <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                          )}
+                                        </div>
+                                      )
+                                    })()
+                                  ) : (
+                                    courts.map((court) => {
+                                      const cellSlots = slotsOnDate.filter((s) => {
+                                        const d = new Date(s.start_at)
+                                        return d.getHours() === hour && s.court_id === court.id
+                                      })
+
+                                      return (
+                                        <div key={court.id} className="flex flex-col gap-1.5 justify-center items-center min-h-[48px] border-l border-zinc-200/40 dark:border-zinc-900/20 first:border-l-0">
+                                          {cellSlots.length > 0 ? (
+                                            cellSlots.map((slot, sIdx) => {
+                                              const isSelected =
+                                                selectedSlot?.start_at === slot.start_at &&
+                                                selectedSlot?.coach_availability_id === slot.coach_availability_id &&
+                                                selectedSlot?.court_availability_id === slot.court_availability_id
+
+                                              const meta = MODE_META[slot.mode]
+
+                                              return (
+                                                <button
+                                                  key={sIdx}
+                                                  type="button"
+                                                  onClick={() => setSelectedSlot(slot)}
+                                                  className={`w-full max-w-[180px] rounded-xl border-2 p-2 text-xs transition duration-200 ${isSelected
+                                                      ? `${meta.border} ${meta.bg} ${meta.color} font-bold shadow-md`
+                                                      : `border-zinc-200 dark:border-zinc-900 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-300 hover:border-orange-500/30`
+                                                    }`}
+                                                >
+                                                  <div className="font-extrabold leading-tight">{formatSlotTime(slot.start_at)} – {formatSlotTime(slot.end_at)}</div>
+                                                  <div className="text-[10px] font-semibold mt-0.5 opacity-90">
+                                                    ₱{(slot.trainingFee + slot.courtFee).toLocaleString()} per session
+                                                  </div>
+                                                </button>
+                                              )
+                                            })
+                                          ) : (
+                                            <span className="text-[10px] text-zinc-300 dark:text-zinc-800 italic select-none">-</span>
+                                          )}
+                                        </div>
+                                      )
+                                    })
+                                  )}
+                                </div>
+                              )
+                            })
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8 flex justify-between">
+                  <button
+                    onClick={prevStep}
+                    className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={!selectedSlot}
+                    className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition disabled:opacity-40"
+                  >
+                    Enter Details
+                  </button>
                 </div>
               </div>
             )}
 
-            <div className="mt-8 flex justify-between">
-              <button
-                onClick={prevStep}
-                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
-              >
-                Back
-              </button>
-              <button
-                onClick={nextStep}
-                disabled={!selectedSlot}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition disabled:opacity-40"
-              >
-                Enter Details
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================
+            {/* ================================================================
             STEP 3: CLIENT DETAILS
         ================================================================ */}
-        {currentStep === 2 && (
-          <div>
-            <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Athlete Information</h2>
-            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Enter details about the training participant.</p>
+            {currentStep === 2 && (
+              <div>
+                <h2 className="text-xl font-bold mb-2 text-zinc-950 dark:text-white">Athlete Information</h2>
+                <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Enter details about the training participant.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. John Doe"
-                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. johndoe@gmail.com"
-                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Contact Number (Mobile) <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="tel"
-                  required
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="e.g. 09171234567"
-                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Age <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={age}
-                  onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
-                  placeholder="e.g. 16"
-                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                />
-              </div>
-            </div>
-
-            {age !== '' && Number(age) < 18 && (
-              <div className="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/5 p-6 space-y-6">
-                <h3 className="text-sm font-bold uppercase tracking-wider text-orange-500">
-                  Parent or Guardian Authorization Required (Minor)
-                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
-                      Parent/Guardian Name <span className="text-red-500">*</span>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Full Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      value={guardianName}
-                      onChange={(e) => setGuardianName(e.target.value)}
-                      placeholder="e.g. Robert Doe"
-                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-750 outline-none focus:border-orange-500 transition-colors duration-200"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. John Doe"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
-                      Guardian Contact Number <span className="text-red-500">*</span>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. johndoe@gmail.com"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Contact Number (Mobile) <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
                       required
-                      value={guardianPhone}
-                      onChange={(e) => setGuardianPhone(e.target.value)}
-                      placeholder="e.g. 09177654321"
-                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-755 outline-none focus:border-orange-500 transition-colors duration-200"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. 09171234567"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Age <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      value={age}
+                      onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
+                      placeholder="e.g. 16"
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                    />
+                  </div>
+                </div>
+
+                {age !== '' && Number(age) < 18 && (
+                  <div className="mt-6 rounded-xl border border-orange-500/20 bg-orange-500/5 p-6 space-y-6">
+                    <h3 className="text-sm font-bold uppercase tracking-wider text-orange-500">
+                      Parent or Guardian Authorization Required (Minor)
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
+                          Parent/Guardian Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={guardianName}
+                          onChange={(e) => setGuardianName(e.target.value)}
+                          placeholder="e.g. Robert Doe"
+                          className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-750 outline-none focus:border-orange-500 transition-colors duration-200"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
+                          Guardian Contact Number <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          value={guardianPhone}
+                          onChange={(e) => setGuardianPhone(e.target.value)}
+                          placeholder="e.g. 09177654321"
+                          className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-755 outline-none focus:border-orange-500 transition-colors duration-200"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-8 border-t border-zinc-800 pt-8 space-y-6">
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">Athlete Bio (Optional)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Court Position</label>
+                      <input
+                        type="text"
+                        value={position}
+                        onChange={(e) => setPosition(e.target.value)}
+                        placeholder="e.g. Guard, Forward"
+                        className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Experience Level</label>
+                      <input
+                        type="text"
+                        value={experience}
+                        onChange={(e) => setExperience(e.target.value)}
+                        placeholder="e.g. High School Varsity"
+                        className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">Specific Skill Goals</label>
+                      <input
+                        type="text"
+                        value={goals}
+                        onChange={(e) => setGoals(e.target.value)}
+                        placeholder="e.g. Finishing, Handles"
+                        className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                      Any Other Notes for Paul
+                    </label>
+                    <textarea
+                      value={clientNotes}
+                      onChange={(e) => setClientNotes(e.target.value)}
+                      placeholder="Tell Paul about any injuries, specific needs, or schedule notes..."
+                      rows={3}
+                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 resize-none transition-colors duration-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-between">
+                  <button
+                    onClick={prevStep}
+                    className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
+                  >
+                    Back
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition"
+                  >
+                    Review &amp; Pay
+                  </button>
                 </div>
               </div>
             )}
 
-            <div className="mt-8 border-t border-zinc-800 pt-8 space-y-6">
-              <h3 className="text-base font-bold text-zinc-900 dark:text-white">Athlete Bio (Optional)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Court Position</label>
-                  <input
-                    type="text"
-                    value={position}
-                    onChange={(e) => setPosition(e.target.value)}
-                    placeholder="e.g. Guard, Forward"
-                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">Experience Level</label>
-                  <input
-                    type="text"
-                    value={experience}
-                    onChange={(e) => setExperience(e.target.value)}
-                    placeholder="e.g. High School Varsity"
-                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">Specific Skill Goals</label>
-                  <input
-                    type="text"
-                    value={goals}
-                    onChange={(e) => setGoals(e.target.value)}
-                    placeholder="e.g. Finishing, Handles"
-                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Any Other Notes for Coach JP
-                </label>
-                <textarea
-                  value={clientNotes}
-                  onChange={(e) => setClientNotes(e.target.value)}
-                  placeholder="Tell Coach JP about any injuries, specific needs, or schedule notes..."
-                  rows={3}
-                  className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 resize-none transition-colors duration-200"
-                />
-              </div>
-            </div>
-
-            <div className="mt-8 flex justify-between">
-              <button
-                onClick={prevStep}
-                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
-              >
-                Back
-              </button>
-              <button
-                onClick={nextStep}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition"
-              >
-                Review &amp; Pay
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ================================================================
+            {/* ================================================================
             STEP 4: PAYMENT SUBMISSION
         ================================================================ */}
-        {currentStep === 3 && (
-          <form onSubmit={handleSubmitBooking}>
-            <h2 className="text-xl font-bold mb-2 text-zinc-955 dark:text-white">Review &amp; Submit Payment</h2>
-            <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Review your booking and upload manual payment details.</p>
+            {currentStep === 3 && (
+              <form onSubmit={handleSubmitBooking}>
+                <h2 className="text-xl font-bold mb-2 text-zinc-955 dark:text-white">Review &amp; Submit Payment</h2>
+                <p className="text-sm text-zinc-550 dark:text-zinc-400 mb-6">Review your booking and upload manual payment details.</p>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Invoice Summary */}
-              <div className="lg:col-span-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4">
-                <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-900 pb-2">
-                  Session Invoice
-                </h3>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  {/* Invoice Summary */}
+                  <div className="lg:col-span-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-900 pb-2">
+                      Session Invoice
+                    </h3>
 
-                {/* Mode badge */}
-                {selectedSlot && (
-                  <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${MODE_META[selectedSlot.mode].border} ${MODE_META[selectedSlot.mode].bg} ${MODE_META[selectedSlot.mode].color}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${MODE_META[selectedSlot.mode].dot}`} />
-                    {MODE_META[selectedSlot.mode].badgeLabel}
-                  </div>
-                )}
+                    {/* Mode badge */}
+                    {selectedSlot && (
+                      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${MODE_META[selectedSlot.mode].border} ${MODE_META[selectedSlot.mode].bg} ${MODE_META[selectedSlot.mode].color}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${MODE_META[selectedSlot.mode].dot}`} />
+                        {MODE_META[selectedSlot.mode].badgeLabel}
+                      </div>
+                    )}
 
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Service Program</span>
-                    <span className="font-semibold text-zinc-850 dark:text-zinc-300">{selectedService?.name}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Training Fee</span>
-                    <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.trainingFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
-                      ₱{selectedSlot?.trainingFee.toLocaleString() ?? 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-900 pb-3">
-                    <span className="text-zinc-500">Court Rental Fee</span>
-                    <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.courtFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
-                      ₱{selectedSlot?.courtFee.toLocaleString() ?? 0}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-base font-bold text-orange-500">
-                    <span>Total Amount Due</span>
-                    <span>
-                      {paymentMethod === 'Redeem Package Code' && packageValidated === true
-                        ? '₱0.00 (Package Credit)'
-                        : `₱${totalAmount.toLocaleString()}`}
-                    </span>
-                  </div>
-                </div>
+                    <div className="space-y-3 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Service Program</span>
+                        <span className="font-semibold text-zinc-850 dark:text-zinc-300">{selectedService?.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Training Fee</span>
+                        <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.trainingFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
+                          ₱{selectedSlot?.trainingFee.toLocaleString() ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-b border-zinc-200 dark:border-zinc-900 pb-3">
+                        <span className="text-zinc-500">Court Rental Fee</span>
+                        <span className={`font-semibold text-zinc-850 dark:text-zinc-300 ${selectedSlot?.courtFee === 0 ? 'text-zinc-400 line-through' : ''}`}>
+                          ₱{selectedSlot?.courtFee.toLocaleString() ?? 0}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-base font-bold text-orange-500">
+                        <span>Total Amount Due</span>
+                        <span>
+                          {paymentMethod === 'Redeem Package Code' && packageValidated === true
+                            ? '₱0.00 (Package Credit)'
+                            : `₱${totalAmount.toLocaleString()}`}
+                        </span>
+                      </div>
+                    </div>
 
-                <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-900 space-y-2 text-xs text-zinc-550 dark:text-zinc-500">
-                  <div>
-                    📅 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot ? formatSlotDate(selectedSlot.start_at) : ''}</span>
+                    <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-900 space-y-2 text-xs text-zinc-550 dark:text-zinc-500">
+                      <div>
+                        📅 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot ? formatSlotDate(selectedSlot.start_at) : ''}</span>
+                      </div>
+                      <div>
+                        🕒 <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                          {selectedSlot ? `${formatSlotTime(selectedSlot.start_at)} – ${formatSlotTime(selectedSlot.end_at)}` : ''}
+                        </span>
+                      </div>
+                      {selectedSlot?.courtName && (
+                        <div>
+                          🏀 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
+                        </div>
+                      )}
+                      {!selectedSlot?.courtName && (
+                        <div>
+                          🏋️ <span className="font-semibold text-zinc-800 dark:text-zinc-300">Paul · No court</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div>
-                    🕒 <span className="font-semibold text-zinc-800 dark:text-zinc-300">
-                      {selectedSlot ? `${formatSlotTime(selectedSlot.start_at)} – ${formatSlotTime(selectedSlot.end_at)}` : ''}
-                    </span>
-                  </div>
-                  {selectedSlot?.courtName && (
+
+                  {/* Payment form */}
+                  <div className="lg:col-span-7 space-y-6">
+                    <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-6">
+                      <h4 className="text-sm font-bold uppercase tracking-wider text-orange-500 mb-3">
+                        Manual Payment Instructions
+                      </h4>
+                      <p className="text-xs text-zinc-550 dark:text-zinc-400 leading-relaxed mb-4">
+                        {settings.payment_instructions}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        {settings.gcash_number && (
+                          <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
+                            <div className="text-[10px] text-zinc-500 font-semibold uppercase">GCash</div>
+                            <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.gcash_number}</div>
+                            <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.gcash_name}</div>
+                          </div>
+                        )}
+                        {settings.maya_number && (
+                          <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
+                            <div className="text-[10px] text-zinc-500 font-semibold uppercase">Maya</div>
+                            <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.maya_number}</div>
+                            <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.maya_name}</div>
+                          </div>
+                        )}
+                        {settings.bank_account_number && (
+                          <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
+                            <div className="text-[10px] text-zinc-500 font-semibold uppercase">Bank ({settings.bank_name})</div>
+                            <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.bank_account_number}</div>
+                            <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.bank_account_name}</div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Dynamic QR Display */}
+                      {paymentMethod === 'GCash' && settings.gcash_qr_path && (
+                        <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
+                          <div className="text-xs font-semibold text-zinc-500 mb-2">Scan GCash QR Code</div>
+                          <img
+                            src={settings.gcash_qr_path}
+                            alt="GCash QR Code"
+                            className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
+                          />
+                        </div>
+                      )}
+                      {paymentMethod === 'Maya' && settings.maya_qr_path && (
+                        <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
+                          <div className="text-xs font-semibold text-zinc-500 mb-2">Scan Maya QR Code</div>
+                          <img
+                            src={settings.maya_qr_path}
+                            alt="Maya QR Code"
+                            className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
+                          />
+                        </div>
+                      )}
+                      {paymentMethod === 'Bank Transfer' && (settings.bank_qr_path || '/bank_qr.jpg') && (
+                        <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
+                          <div className="text-xs font-semibold text-zinc-500 mb-2">Scan Bank Transfer QR Code</div>
+                          <img
+                            src={settings.bank_qr_path || '/bank_qr.jpg'}
+                            alt="Bank Transfer QR Code"
+                            className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
+                          />
+                        </div>
+                      )}
+                    </div>
+
                     <div>
-                      🏀 <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
-                    </div>
-                  )}
-                  {!selectedSlot?.courtName && (
-                    <div>
-                      🏋️ <span className="font-semibold text-zinc-800 dark:text-zinc-300">Coach JP · No court</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Payment form */}
-              <div className="lg:col-span-7 space-y-6">
-                <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-6">
-                  <h4 className="text-sm font-bold uppercase tracking-wider text-orange-500 mb-3">
-                    Manual Payment Instructions
-                  </h4>
-                  <p className="text-xs text-zinc-550 dark:text-zinc-400 leading-relaxed mb-4">
-                    {settings.payment_instructions}
-                  </p>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    {settings.gcash_number && (
-                      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
-                        <div className="text-[10px] text-zinc-500 font-semibold uppercase">GCash</div>
-                        <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.gcash_number}</div>
-                        <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.gcash_name}</div>
-                      </div>
-                    )}
-                    {settings.maya_number && (
-                      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
-                        <div className="text-[10px] text-zinc-500 font-semibold uppercase">Maya</div>
-                        <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.maya_number}</div>
-                        <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.maya_name}</div>
-                      </div>
-                    )}
-                    {settings.bank_account_number && (
-                      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900/60 p-3">
-                        <div className="text-[10px] text-zinc-500 font-semibold uppercase">Bank ({settings.bank_name})</div>
-                        <div className="font-bold text-zinc-900 dark:text-white text-sm mt-0.5">{settings.bank_account_number}</div>
-                        <div className="text-[10px] text-zinc-550 dark:text-zinc-400">{settings.bank_account_name}</div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Dynamic QR Display */}
-                  {paymentMethod === 'GCash' && settings.gcash_qr_path && (
-                    <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
-                      <div className="text-xs font-semibold text-zinc-500 mb-2">Scan GCash QR Code</div>
-                      <img
-                        src={settings.gcash_qr_path}
-                        alt="GCash QR Code"
-                        className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
-                      />
-                    </div>
-                  )}
-                  {paymentMethod === 'Maya' && settings.maya_qr_path && (
-                    <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
-                      <div className="text-xs font-semibold text-zinc-500 mb-2">Scan Maya QR Code</div>
-                      <img
-                        src={settings.maya_qr_path}
-                        alt="Maya QR Code"
-                        className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
-                      />
-                    </div>
-                  )}
-                  {paymentMethod === 'Bank Transfer' && (settings.bank_qr_path || '/bank_qr.jpg') && (
-                    <div className="mt-4 flex flex-col items-center justify-center p-4 border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/40 rounded-lg">
-                      <div className="text-xs font-semibold text-zinc-500 mb-2">Scan Bank Transfer QR Code</div>
-                      <img
-                        src={settings.bank_qr_path || '/bank_qr.jpg'}
-                        alt="Bank Transfer QR Code"
-                        className="h-40 w-40 object-contain rounded-lg border border-zinc-100 dark:border-zinc-800"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
-                    Payment Channel
-                  </label>
-                  <select
-                    value={paymentMethod}
-                    onChange={(e) => {
-                      setPaymentMethod(e.target.value)
-                      setError(null)
-                    }}
-                    className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 transition-colors"
-                  >
-                    <option value="GCash">GCash</option>
-                    <option value="Maya">Maya</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Redeem Package Code">Redeem Package Code</option>
-                  </select>
-                </div>
-
-                {paymentMethod === 'Redeem Package Code' ? (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
-                      Package Redemption Code <span className="text-red-500">*</span>
-                    </label>
-                    <div className="flex gap-2 mt-2">
-                      <input
-                        type="text"
-                        required
-                        value={packageCodeInput}
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
+                        Payment Channel
+                      </label>
+                      <select
+                        value={paymentMethod}
                         onChange={(e) => {
-                          setPackageCodeInput(e.target.value.toUpperCase())
-                          setPackageValidated(null)
+                          setPaymentMethod(e.target.value)
+                          setError(null)
                         }}
-                        placeholder="e.g. NGP-PKG-A1B2C3"
-                        className="flex-1 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 uppercase font-mono tracking-wider"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleValidatePackageCode}
-                        disabled={validatingCode || !packageCodeInput.trim()}
-                        className="rounded-lg bg-orange-500 hover:bg-orange-400 text-black px-5 text-xs font-bold uppercase transition disabled:opacity-40"
+                        className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 transition-colors"
                       >
-                        {validatingCode ? 'Checking...' : 'Validate'}
-                      </button>
+                        <option value="GCash">GCash</option>
+                        <option value="Maya">Maya</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Redeem Package Code">Redeem Package Code</option>
+                      </select>
                     </div>
-                    {packageValidated === true && (
-                      <p className="mt-2 text-xs text-emerald-500 font-bold flex items-center gap-1">
-                        ✓ Code verified! {remainingSessionsLeft} sessions left in this package.
-                      </p>
-                    )}
-                    {packageValidated === false && (
-                      <p className="mt-2 text-xs text-red-500 font-semibold">
-                        ✗ Invalid, inactive, or exhausted package code.
-                      </p>
+
+                    {paymentMethod === 'Redeem Package Code' ? (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-550 dark:text-zinc-400">
+                          Package Redemption Code <span className="text-red-500">*</span>
+                        </label>
+                        <div className="flex gap-2 mt-2">
+                          <input
+                            type="text"
+                            required
+                            value={packageCodeInput}
+                            onChange={(e) => {
+                              setPackageCodeInput(e.target.value.toUpperCase())
+                              setPackageValidated(null)
+                            }}
+                            placeholder="e.g. NGP-PKG-A1B2C3"
+                            className="flex-1 rounded-lg border border-zinc-200 dark:border-zinc-850 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white outline-none focus:border-orange-500 uppercase font-mono tracking-wider"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleValidatePackageCode}
+                            disabled={validatingCode || !packageCodeInput.trim()}
+                            className="rounded-lg bg-orange-500 hover:bg-orange-400 text-black px-5 text-xs font-bold uppercase transition disabled:opacity-40"
+                          >
+                            {validatingCode ? 'Checking...' : 'Validate'}
+                          </button>
+                        </div>
+                        {packageValidated === true && (
+                          <p className="mt-2 text-xs text-emerald-500 font-bold flex items-center gap-1">
+                            ✓ Code verified! {remainingSessionsLeft} sessions left in this package.
+                          </p>
+                        )}
+                        {packageValidated === false && (
+                          <p className="mt-2 text-xs text-red-500 font-semibold">
+                            ✗ Invalid, inactive, or exhausted package code.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div>
+                        <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                          Payment Reference Number <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          value={referenceNumber}
+                          onChange={(e) => setReferenceNumber(e.target.value)}
+                          placeholder="Enter GCash/Maya reference number"
+                          className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
+                        />
+                        <p className="mt-1.5 text-[11px] text-zinc-550 dark:text-zinc-500">Please make sure to input the correct transaction reference number for verification.</p>
+                      </div>
                     )}
                   </div>
-                ) : (
-                  <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                      Payment Reference Number <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={referenceNumber}
-                      onChange={(e) => setReferenceNumber(e.target.value)}
-                      placeholder="Enter GCash/Maya reference number"
-                      className="mt-2 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 px-4 py-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-700 outline-none focus:border-orange-500 transition-colors duration-200"
-                    />
-                    <p className="mt-1.5 text-[11px] text-zinc-550 dark:text-zinc-500">Please make sure to input the correct transaction reference number for verification.</p>
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-8 flex justify-between">
-              <button
-                type="button"
-                onClick={prevStep}
-                disabled={submitting}
-                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition disabled:opacity-50 px-6 py-3 text-sm font-bold uppercase tracking-wider"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="rounded-lg bg-orange-500 px-8 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition disabled:opacity-50"
-              >
-                {submitting ? 'Submitting Request...' : 'Submit Booking'}
-              </button>
-            </div>
-          </form>
-        )}
+                <div className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-8 flex justify-between">
+                  <button
+                    type="button"
+                    onClick={prevStep}
+                    disabled={submitting}
+                    className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition disabled:opacity-50 px-6 py-3 text-sm font-bold uppercase tracking-wider"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="rounded-lg bg-orange-500 px-8 py-3 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-orange-500/10 hover:bg-orange-400 transition disabled:opacity-50"
+                  >
+                    {submitting ? 'Submitting Request...' : 'Submit Booking'}
+                  </button>
+                </div>
+              </form>
+            )}
 
-        {/* ================================================================
+            {/* ================================================================
             STEP 5: CONFIRMATION
         ================================================================ */}
-        {currentStep === 4 && (
-          <div className="text-center py-8">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-6">
-              <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-
-            <h2 className="text-2xl font-black text-zinc-950 dark:text-white sm:text-3xl">Booking Submitted Successfully</h2>
-            <p className="mt-3 text-sm text-zinc-550 dark:text-zinc-400 max-w-md mx-auto">
-              Your request has been received. Coach JP will review your payment and update your booking status shortly.
-            </p>
-
-            <div className="mt-8 mx-auto max-w-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4 text-left">
-              <div className="text-center border-b border-zinc-200 dark:border-zinc-900 pb-3">
-                <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-widest block">Booking Reference</span>
-                <span className="text-lg font-black text-orange-500 tracking-wider mt-1 block">{bookingRef}</span>
-              </div>
-
-              {/* Mode summary */}
-              {selectedSlot && (
-                <div className="flex justify-center">
-                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${MODE_META[selectedSlot.mode].border} ${MODE_META[selectedSlot.mode].bg} ${MODE_META[selectedSlot.mode].color}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${MODE_META[selectedSlot.mode].dot}`} />
-                    {MODE_META[selectedSlot.mode].badgeLabel}
-                  </span>
+            {currentStep === 4 && (
+              <div className="text-center py-8">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-500/10 text-green-500 mb-6">
+                  <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
                 </div>
-              )}
 
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Status</span>
-                  <span className="font-bold text-yellow-500 uppercase tracking-wider">Pending Confirmation</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Service</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedService?.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500">Time</span>
-                  <span className="font-semibold text-zinc-800 dark:text-zinc-300">
-                    {selectedSlot ? `${formatSlotDate(selectedSlot.start_at)} · ${formatSlotTime(selectedSlot.start_at)}` : ''}
-                  </span>
-                </div>
-                {selectedSlot?.courtName && (
-                  <div className="flex justify-between">
-                    <span className="text-zinc-500">Court</span>
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
+                <h2 className="text-2xl font-black text-zinc-950 dark:text-white sm:text-3xl">Booking Submitted Successfully</h2>
+                <p className="mt-3 text-sm text-zinc-550 dark:text-zinc-400 max-w-md mx-auto">
+                  Your request has been received. Paul will review your payment and update your booking status shortly.
+                </p>
+
+                <div className="mt-8 mx-auto max-w-sm rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-955 p-6 space-y-4 text-left">
+                  <div className="text-center border-b border-zinc-200 dark:border-zinc-900 pb-3">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-500 tracking-widest block">Booking Reference</span>
+                    <span className="text-lg font-black text-orange-500 tracking-wider mt-1 block">{bookingRef}</span>
                   </div>
-                )}
-                <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-900 pt-2 text-sm font-bold">
-                  <span className="text-zinc-400">Total Charged</span>
-                  <span className="text-zinc-950 dark:text-white">₱{totalAmount.toLocaleString()}</span>
+
+                  {/* Mode summary */}
+                  {selectedSlot && (
+                    <div className="flex justify-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-wider ${MODE_META[selectedSlot.mode].border} ${MODE_META[selectedSlot.mode].bg} ${MODE_META[selectedSlot.mode].color}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${MODE_META[selectedSlot.mode].dot}`} />
+                        {MODE_META[selectedSlot.mode].badgeLabel}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Status</span>
+                      <span className="font-bold text-yellow-500 uppercase tracking-wider">Pending Confirmation</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Service</span>
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedService?.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-zinc-500">Time</span>
+                      <span className="font-semibold text-zinc-800 dark:text-zinc-300">
+                        {selectedSlot ? `${formatSlotDate(selectedSlot.start_at)} · ${formatSlotTime(selectedSlot.start_at)}` : ''}
+                      </span>
+                    </div>
+                    {selectedSlot?.courtName && (
+                      <div className="flex justify-between">
+                        <span className="text-zinc-500">Court</span>
+                        <span className="font-semibold text-zinc-800 dark:text-zinc-300">{selectedSlot.courtName}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between border-t border-zinc-200 dark:border-zinc-900 pt-2 text-sm font-bold">
+                      <span className="text-zinc-400">Total Charged</span>
+                      <span className="text-zinc-950 dark:text-white">₱{totalAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6 rounded-lg bg-zinc-100 dark:bg-zinc-955/40 border border-zinc-200 dark:border-zinc-900 p-4 max-w-sm mx-auto text-xs text-zinc-550 dark:text-zinc-400">
+                  💡 <span className="font-semibold">Tip:</span> Save your Reference Code. You can use it to look up your status and cancel if needed.
+                </div>
+
+                <div className="mt-8 flex justify-center gap-4">
+                  <button
+                    onClick={() => router.push('/')}
+                    className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-850 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
+                  >
+                    Go to Home
+                  </button>
+                  <button
+                    onClick={() => router.push('/booking/lookup')}
+                    className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black hover:bg-orange-400 transition"
+                  >
+                    Lookup Status
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <div className="mt-6 rounded-lg bg-zinc-100 dark:bg-zinc-955/40 border border-zinc-200 dark:border-zinc-900 p-4 max-w-sm mx-auto text-xs text-zinc-550 dark:text-zinc-400">
-              💡 <span className="font-semibold">Tip:</span> Save your Reference Code. You can use it to look up your status and cancel if needed.
-            </div>
-
-            <div className="mt-8 flex justify-center gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="rounded-lg border border-zinc-200 bg-zinc-100 hover:bg-zinc-200 text-zinc-800 dark:border-zinc-850 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition px-6 py-3 text-sm font-bold uppercase tracking-wider"
-              >
-                Go to Home
-              </button>
-              <button
-                onClick={() => router.push('/booking/lookup')}
-                className="rounded-lg bg-orange-500 px-6 py-3 text-sm font-bold uppercase tracking-wider text-black hover:bg-orange-400 transition"
-              >
-                Lookup Status
-              </button>
-            </div>
+            )}
           </div>
-        )}
-      </div>
-    </>
-  )}
+        </>
+      )}
 
       {/* CLIENT SIDE VIEW MAP MODAL */}
       {mapModalCourt && (
@@ -2110,7 +2106,7 @@ export default function BookingFlow({
                 ✕
               </button>
             </div>
-            
+
             <div className="h-[300px] w-full rounded-xl overflow-hidden border border-zinc-200 dark:border-zinc-800">
               <CourtMap
                 latitude={mapModalCourt.latitude}
@@ -2118,7 +2114,7 @@ export default function BookingFlow({
                 readOnly={true}
               />
             </div>
-            
+
             <div className="flex justify-between items-center mt-4">
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${mapModalCourt.latitude},${mapModalCourt.longitude}`}

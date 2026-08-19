@@ -669,6 +669,6 @@ ON CONFLICT (id) DO NOTHING;
 -- Seed reviews
 INSERT INTO public.reviews (client_name, rating, review_text, is_featured, is_active)
 VALUES
-  ('Marcus Rivera', 5, 'Coach JPs attention to detail corrected my shooting release in just 3 sessions. His skill workouts are game-focused and incredibly intense.', true, true),
-  ('Kenzo Sy', 5, 'The 2-on-1 sessions helped my brother and me develop better chemistry on court. Coach JP explains the "why" behind every movement pattern.', true, true),
+  ('Marcus Rivera', 5, 'Pauls attention to detail corrected my shooting release in just 3 sessions. His skill workouts are game-focused and incredibly intense.', true, true),
+  ('Kenzo Sy', 5, 'The 2-on-1 sessions helped my brother and me develop better chemistry on court. Paul explains the "why" behind every movement pattern.', true, true),
   ('Coach Adrian', 4, 'Great skill trainer. Highly recommended for kids and teenagers looking to build solid fundamentals and athletic basketball movement.', false, true);

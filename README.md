@@ -72,7 +72,7 @@ To access the Coach Dashboard, you must register the admin account:
 ## 🏀 Business Workflows
 
 ### Client Self-Service Flow:
-1. **Visit Landing Page:** Read Coach JP's bio, values, and testimonials.
+1. **Visit Landing Page:** Read Paul's bio, values, and testimonials.
 2. **Book Session:** Select a service (1-on-1, 2-on-1, or Group).
 3. **Select Date & Slot:** View matched slots derived from overlapping Coach Availability and Court Availability schedules.
 4. **Detail Entry:** Input client info (under 18 dynamically prompts for parent authorization details).

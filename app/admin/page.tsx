@@ -131,7 +131,7 @@ export default function AdminDashboard() {
     <div className="space-y-10">
       {/* Welcome Heading */}
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Good morning, Coach JP 👋</h1>
+        <h1 className="text-3xl font-extrabold tracking-tight">Good morning, Paul 👋</h1>
         <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">Here&apos;s what is happening with NGP today.</p>
       </div>
 
